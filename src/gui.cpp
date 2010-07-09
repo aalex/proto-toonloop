@@ -164,6 +164,28 @@ gboolean Gui::on_configure_event(GtkWidget *widget, GdkEventConfigure *event, gp
     /*** OpenGL END ***/
     return TRUE;
 }
+// TODO:
+// bool Gui::create_live_input_texture()
+// {
+//     if (pipeline->has_new_live_input_data_) {
+//         pipeline->has_new_live_input_data_ = false;
+//         if (! live_input_texture_created_)
+//         {
+//             live_input_texture_created_ = true;
+//             glGenTextures(1, &live_input_texture_);
+//         }
+//         int width = 
+//         int height = 
+//         char* buf = 
+//         glBindTexture(GL_TEXTURE_RECTANGLE_ARB, live_input_texture_);
+//         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buf);
+//         // TODO: simplify those parameters
+//         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+// }
+
 
 // draws the stuff
 void _draw()
@@ -186,6 +208,7 @@ void _draw()
         draw::draw_line(float(x), -2.0, float(x), 2.0);
         draw::draw_line(-2.0, float(x), 2.0, float(x));
     }
+    //TODO: glEnable(GL_TEXTURE_RECTANGLE_ARB);
 }
 /**
  * Handles the "expose_event" signal to redraw the contents of the widget.
@@ -220,6 +243,7 @@ gboolean Gui::on_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer
 Gui::Gui() :
     isFullscreen_(false)
 {
+    live_input_texture_created_ = false;
     //glx_context_ = NULL;
     gint major; 
     gint minor;

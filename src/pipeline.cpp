@@ -57,7 +57,7 @@ void Pipeline::end_stream_cb(GstBus* bus, GstMessage* message, GstElement* pipel
 
 void Pipeline::stop()
 {
-    std::cout << "Stopping the Gstreamer pipeline." << std::endl;
+    std::cout << "Stopping the GStreamer pipeline." << std::endl;
     gst_element_set_state(GST_ELEMENT(pipeline_), GST_STATE_NULL);
     gst_object_unref(pipeline_);
     // gtk main quit?
@@ -66,7 +66,7 @@ void Pipeline::stop()
 void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
 {
     GstBuffer *buffer = 0;
-    static size_t size = 614400;
+    static size_t size = 0;
 
     /// FIXME: maybe replace with Concurrent queue?
     /* get the buffer from appsink */
@@ -74,25 +74,27 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
 
     // push the buffer
     size_t newSize = GST_BUFFER_SIZE (buffer);
-    std::cout << "Got a buffer of size: " <<  size << std::endl;
+    //std::cout << "Got a buffer of size: " <<  size << std::endl;
 
     Pipeline* pipeline = static_cast<Pipeline*>(context);
     // Copy the data into RAM
-    if (size != newSize) {
-        size = newSize;
-        std::cout << "reallocating the last frame data buffer with size " << size << std::endl;
-        delete [] pipeline->last_frame_data_;
-        pipeline->last_frame_data_ = new char[size];
+    if  (newSize != 0) {
+        if (size != newSize) {
+            size = newSize;
+            std::cout << "reallocating the last frame data buffer with size " << size << std::endl;
+            delete [] pipeline->last_frame_data_;
+            pipeline->last_frame_data_ = new char[size];
+        }
+        memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
+        pipeline->has_new_live_input_data_ = true;
     }
-    memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
-    
     /* we don't need the appsink buffer anymore */
     gst_buffer_unref(buffer);
 }
 
 Pipeline::Pipeline()
 {
-    last_frame_data_ = new char[614400]; // IMPORTANT!
+    last_frame_data_ = new char[0]; // IMPORTANT!
     int width = 640;
     int height = 480;
     pipeline_ = NULL;
@@ -123,7 +125,6 @@ Pipeline::Pipeline()
     GstElement* appsink0_ = gst_element_factory_make("appsink", "appsink0");
     g_assert(appsink0_);
     
-
     // add elements
     if (!videosrc_ or !capsfilter0)
     {

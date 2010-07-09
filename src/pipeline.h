@@ -11,6 +11,7 @@ class Pipeline
         void stop();
         Pipeline();
         ~Pipeline();
+        bool has_new_live_input_data_;
         char* last_frame_data_;
     private:
         GstElement* videosrc_;
