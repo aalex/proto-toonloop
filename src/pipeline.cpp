@@ -1,12 +1,14 @@
 #include <gtk/gtk.h>
 #include <GL/glx.h>
 #include <gst/gst.h>
+#include <gst/app/gstappsink.h>
+#include <gst/app/gstappbuffer.h>
 #include <gdk/gdk.h>
 #include <iostream>
-#include "gstgtk.h"
 #include "pipeline.h"
-#include "draw.h"
+//#include "draw.h"
 #include "application.h"
+#include <sstream>
 
 /**
  * GST bus signal watch callback 
@@ -59,13 +61,31 @@ void Pipeline::stop()
     gst_object_unref(pipeline_);
     // gtk main quit?
 }
+
+void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
+{
+    GstBuffer *buffer = 0;
+    size_t size;
+
+    /// FIXME: maybe replace with Concurrent queue?
+    /* get the buffer from appsink */
+    buffer = gst_app_sink_pull_buffer(GST_APP_SINK(element));
+
+    // push the buffer
+    size = GST_BUFFER_SIZE (buffer);
+    std::cout << "Got a buffer of size: " <<  size << std::endl;
+
+    /* we don't need the appsink buffer anymore */
+    gst_buffer_unref(buffer);
+}
+
 Pipeline::Pipeline()
 {
-#if 0
+    int width = 640;
+    int height = 480;
     pipeline_ = NULL;
     
     pipeline_ = GST_PIPELINE(gst_pipeline_new("pipeline"));
-    //state_ = 0;
     GstElement* glupload;
     
     // videotestsrc element
@@ -77,41 +97,63 @@ Pipeline::Pipeline()
         // 30/1
     GstElement* capsfilter0 = gst_element_factory_make ("capsfilter", NULL);
     GstCaps *caps = gst_caps_new_simple("video/x-raw-rgb",
-                                        "width", G_TYPE_INT, 640,
-                                        "height", G_TYPE_INT, 480,
+                                        "width", G_TYPE_INT, width,
+                                        "height", G_TYPE_INT, height,
                                         "framerate", GST_TYPE_FRACTION, 30000, 1001,
                                         NULL); 
     g_object_set(capsfilter0, "caps", caps, NULL);
     gst_caps_unref(caps);
-    // glupload element
-    glupload  = gst_element_factory_make ("glupload", "glupload0");
-    // glimagesink
-    videosink_ = gst_element_factory_make("glimagesink", "glimagesink0");
-    g_object_set(videosink_, "sync", FALSE, NULL);
-    g_object_set(G_OBJECT(videosink_), "client-reshape-callback", reshapeCallback, NULL);
-    g_object_set(G_OBJECT(videosink_), "client-draw-callback", drawCallback, NULL);
-    // capsfilter element #1
-    GstElement* capsfilter1 = gst_element_factory_make ("capsfilter", NULL);
-    GstCaps *outcaps = gst_caps_new_simple("video/x-raw-gl",
-                                        "width", G_TYPE_INT, 800,
-                                        "height", G_TYPE_INT, 600,
-                                        NULL) ;
-    g_object_set(capsfilter1, "caps", outcaps, NULL);
-    gst_caps_unref(outcaps);
+    
+    // ffmpegcolorspace
+    
+    GstElement* ffmpegcolorspace0 = gst_element_factory_make("ffmpegcolorspace", "ffmpegcolorspace0");
+    g_assert(ffmpegcolorspace0);
+    GstElement* appsink0_ = gst_element_factory_make("appsink", "appsink0");
+    g_assert(appsink0_);
+    
 
     // add elements
-    if (!videosrc_ or !capsfilter0 or !glupload or !capsfilter1 or !videosink_)
+    if (!videosrc_ or !capsfilter0)
     {
         g_print("one element could not be found \n");
         exit(1);
     }
-    gst_bin_add_many(GST_BIN(pipeline_), videosrc_, capsfilter0, glupload, capsfilter1, videosink_, NULL);
-    gboolean linked_ok = gst_element_link_many(videosrc_, capsfilter0, glupload, capsfilter1, videosink_, NULL);
-    if (!linked_ok)
-    {
-        g_print("Could not link the elements\n.");
-        exit(1);
+    
+    gst_bin_add(GST_BIN(pipeline_), videosrc_);
+    gst_bin_add(GST_BIN(pipeline_), capsfilter0);
+    gst_bin_add(GST_BIN(pipeline_), ffmpegcolorspace0);
+    gst_bin_add(GST_BIN(pipeline_), appsink0_);
+    gboolean is_linked;
+
+    is_linked = gst_element_link(videosrc_, capsfilter0);
+    if (!is_linked) { 
+        g_print("Could not link %s to %s.\n", "videosrc_", "capsfilter0"); 
+        exit(1); 
     }
+    is_linked = gst_element_link(capsfilter0, ffmpegcolorspace0);
+    if (!is_linked) { 
+        g_print("Could not link %s to %s.\n", "capsfilter0", "ffmpegcolorspace0"); 
+        exit(1); 
+    }
+    is_linked = gst_element_link(ffmpegcolorspace0, appsink0_);
+    if (!is_linked) { 
+        g_print("Could not link %s to %s.\n", "ffmpegcolorspace0", "appsink0_"); 
+        exit(1); 
+    }
+    
+    // Preparing the appsink:
+    GstCaps *videoCaps; 
+    std::ostringstream capsStr;
+
+    /// FIXME: should detect caps from preceding element in pipeline if possible
+    capsStr << "video/x-raw-rgb, width=" << width << ", height=" << height << ",bpp=16, depth=16"; 
+    videoCaps = gst_caps_from_string(capsStr.str().c_str());
+
+    g_object_set(G_OBJECT(appsink0_), "emit-signals", TRUE, "caps", videoCaps, NULL);
+    //g_object_set(sink_, "max-buffers", MAX_BUFFERS, "drop", TRUE, NULL);
+    g_signal_connect(appsink0_, "new-buffer", G_CALLBACK(on_new_buffer), this);
+    gst_caps_unref(videoCaps);
+    
     /* setup bus */
     GstBus* bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
     gst_bus_add_signal_watch(bus);
@@ -140,29 +182,6 @@ Pipeline::Pipeline()
         }
         exit(1);
     }
-#endif
-}
-
-// sets the x-window-id 
-// Important !
-static GstBusSyncReply create_window(GstBus* bus, GstMessage* message, GtkWidget* widget)
-{
-    // ignore anything but 'prepare-xwindow-id' element messages
-    if (GST_MESSAGE_TYPE(message) != GST_MESSAGE_ELEMENT)
-        return GST_BUS_PASS;
-    if (!gst_structure_has_name(message->structure, "prepare-xwindow-id"))
-        return GST_BUS_PASS;
-    g_print("setting xwindow id\n");
-    gst_x_overlay_set_gtk_window(GST_X_OVERLAY(GST_MESSAGE_SRC(message)), widget);
-    gst_message_unref(message);
-    return GST_BUS_DROP;
-}
-
-void Pipeline::set_drawing_area(GtkWidget* drawing_area)
-{
-    GstBus* bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
-    gst_bus_set_sync_handler(bus, (GstBusSyncHandler)create_window, drawing_area);
-    gst_object_unref (bus);
 }
 
 Pipeline::~Pipeline() {}

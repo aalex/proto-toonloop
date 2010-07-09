@@ -33,8 +33,18 @@ PKG_CHECK_MODULES([GST], [gstreamer-gl-0.10 >= 0.10.0 gstreamer-0.10 >= 0.10.0  
 PKG_CHECK_MODULES([GTK], [gtk+-2.0])
 PKG_CHECK_MODULES([GDK], [gdk-2.0])
 
+
+#Trying to set GSTAPP using pkg-config
+PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
+if test "x${have_gstreamer_app}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
+fi
+
+
+
 PKG_CHECK_MODULES([GTKGLEXT], [gtkglext-1.0 >= 1.0])
 AC_SUBST([GST_LIBS])
+AC_SUBST([GSTAPP_LIBS])
 AC_SUBST([GST_CFLAGS])
 
 # BOOST

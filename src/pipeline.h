@@ -9,18 +9,14 @@ class Pipeline
 {
     public:
         void stop();
-        void set_drawing_area(GtkWidget *drawing_area);
         Pipeline();
         ~Pipeline();
     private:
         GstElement* videosrc_;
-        GstElement* videosink_;
+        GstElement* appsink0_;
         GstPipeline* pipeline_;
-        GstState state_;
         static void end_stream_cb(GstBus* bus, GstMessage* msg, GstElement* pipeline);
+        static void on_new_buffer(GstElement *element, Pipeline *context);
 };
-
-static GstBusSyncReply create_window(GstBus* bus, GstMessage* message, GtkWidget* widget);
-static gboolean on_expose_event(GtkWidget* widget, GdkEventExpose* event, GstElement* videosink);
 
 #endif // __PIPELINE_H__
