@@ -5,6 +5,7 @@
 #include <gst/app/gstappbuffer.h>
 #include <gdk/gdk.h>
 #include <iostream>
+#include <cstring> // for memcpy
 #include "pipeline.h"
 //#include "draw.h"
 #include "application.h"
@@ -65,22 +66,33 @@ void Pipeline::stop()
 void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
 {
     GstBuffer *buffer = 0;
-    size_t size;
+    static size_t size = 614400;
 
     /// FIXME: maybe replace with Concurrent queue?
     /* get the buffer from appsink */
     buffer = gst_app_sink_pull_buffer(GST_APP_SINK(element));
 
     // push the buffer
-    size = GST_BUFFER_SIZE (buffer);
+    size_t newSize = GST_BUFFER_SIZE (buffer);
     std::cout << "Got a buffer of size: " <<  size << std::endl;
 
+    Pipeline* pipeline = static_cast<Pipeline*>(context);
+    // Copy the data into RAM
+    if (size != newSize) {
+        size = newSize;
+        std::cout << "reallocating the last frame data buffer with size " << size << std::endl;
+        delete [] pipeline->last_frame_data_;
+        pipeline->last_frame_data_ = new char[size];
+    }
+    memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
+    
     /* we don't need the appsink buffer anymore */
     gst_buffer_unref(buffer);
 }
 
 Pipeline::Pipeline()
 {
+    last_frame_data_ = new char[614400]; // IMPORTANT!
     int width = 640;
     int height = 480;
     pipeline_ = NULL;

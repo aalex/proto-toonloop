@@ -89,7 +89,7 @@ void Gui::on_realize(GtkWidget *widget, gpointer data)
     {
         return;
     }
-    context->glx_context_ = glXGetCurrentContext();
+    //context->glx_context_ = glXGetCurrentContext();
     glDisable(GL_DEPTH_TEST);
   
     glClearColor(0.0, 0.0, 0.0, 1.0); // black background
@@ -220,7 +220,7 @@ gboolean Gui::on_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer
 Gui::Gui() :
     isFullscreen_(false)
 {
-    glx_context_ = NULL;
+    //glx_context_ = NULL;
     gint major; 
     gint minor;
     gdk_gl_query_version(&major, &minor);
@@ -279,10 +279,5 @@ Gui::Gui() :
     gtk_widget_set_double_buffered(drawing_area_, FALSE);
   
     gtk_widget_show_all(window_);
-}
-
-GtkWidget* Gui::get_drawing_area()
-{
-    return drawing_area_;
 }
 

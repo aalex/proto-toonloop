@@ -11,6 +11,7 @@ class Pipeline
         void stop();
         Pipeline();
         ~Pipeline();
+        char* last_frame_data_;
     private:
         GstElement* videosrc_;
         GstElement* appsink0_;

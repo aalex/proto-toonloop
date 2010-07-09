@@ -10,7 +10,6 @@ void _set_view(float ratio);
 class Gui
 {
     public:
-        GtkWidget* get_drawing_area();
         Gui(); 
         ~Gui() {};
         void toggleFullscreen() { toggleFullscreen(window_); } // no argument version of the same method below.
@@ -18,7 +17,7 @@ class Gui
     private:
         GtkWidget *drawing_area_;
         GtkWidget *window_;
-        GLXContext glx_context_;
+        //GLXContext glx_context_;
         static void on_realize(GtkWidget *widget, gpointer data);
         static void on_delete_event(GtkWidget* widget, GdkEvent* event, gpointer data);
         static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data);
@@ -35,3 +34,4 @@ class Gui
 };
 
 #endif // __GUI_H__
+
