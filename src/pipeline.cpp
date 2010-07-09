@@ -61,6 +61,7 @@ void Pipeline::stop()
 }
 Pipeline::Pipeline()
 {
+#if 0
     pipeline_ = NULL;
     
     pipeline_ = GST_PIPELINE(gst_pipeline_new("pipeline"));
@@ -139,91 +140,7 @@ Pipeline::Pipeline()
         }
         exit(1);
     }
-}
-//client reshape callback
-void reshapeCallback (GLuint width, GLuint height, gpointer data)
-{
-    glViewport(0, 0, width, height);
-    
-    float w = float(width) / float(height);
-    float h = 1.0;
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-w, w, -h, h, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-
-    glEnable (GL_POLYGON_SMOOTH);
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-    //glEnable (GL_LINE_SMOOTH);
-    //glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-}
-
-//client draw callback
-gboolean drawCallback (GLuint texture, GLuint width, GLuint height, gpointer data)
-{
-    static GLfloat  zrot = 0;
-    static GTimeVal current_time;
-    static glong last_sec = current_time.tv_sec;
-    static gint nbFrames = 0;
-
-    g_get_current_time (&current_time);
-    nbFrames++ ;
-
-    if ((current_time.tv_sec - last_sec) >= 1)
-    {
-        std::cout << "GRAPHIC FPS = " << nbFrames << std::endl;
-        nbFrames = 0;
-        last_sec = current_time.tv_sec;
-    }
-
-    glEnable (GL_TEXTURE_RECTANGLE_ARB);
-    glBindTexture (GL_TEXTURE_RECTANGLE_ARB, texture);
-    glTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
-    glColor4f(1.0, 1.0, 1.0, 1.0);
-
-    glTranslatef(0.0f,0.0f,0.0f);
-
-    glRotatef(zrot,0.0f,0.0f,1.0f);
-
-    glBegin(GL_QUADS);
-    // Front Face
-    glTexCoord2f((gfloat)width, 0.0f); 
-    glVertex3f(-0.666f, -0.5f,  0.0f);
-    glTexCoord2f(0.0f, 0.0f); 
-    glVertex3f( 0.666f, -0.5f,  0.0f);
-    glTexCoord2f(0.0f, (gfloat)height); 
-    glVertex3f( 0.666f,  0.5f,  0.0f);
-    glTexCoord2f((gfloat)width, (gfloat)height); 
-    glVertex3f(-0.666f,  0.5f,  0.0f);
-    glEnd();
-
-    zrot+=0.001f;
-    glPopMatrix();
-
-    // DRAW LINES
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
-    glColor4f(0.2, 0.2, 0.2, 0.2);
-    int num = 64;
-    float x;
-    
-    for (int i = 0; i < num; i++)
-    {
-        x = (i / float(num)) * 4 - 2;
-        draw::draw_line(float(x), -2.0, float(x), 2.0);
-        draw::draw_line(-2.0, float(x), 2.0, float(x));
-    }
-    
-    //return TRUE causes a postRedisplay
-    return FALSE;
+#endif
 }
 
 // sets the x-window-id 

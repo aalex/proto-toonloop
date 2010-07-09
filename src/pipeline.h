@@ -22,7 +22,5 @@ class Pipeline
 
 static GstBusSyncReply create_window(GstBus* bus, GstMessage* message, GtkWidget* widget);
 static gboolean on_expose_event(GtkWidget* widget, GdkEventExpose* event, GstElement* videosink);
-void reshapeCallback(GLuint width, GLuint height, gpointer data);
-gboolean drawCallback(GLuint texture, GLuint width, GLuint height, gpointer data);
 
 #endif // __PIPELINE_H__

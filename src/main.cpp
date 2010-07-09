@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     // Init GTK GL:
     gtk_gl_init(&argc, &argv);
     // Init GST:
-    gst_init(&argc, &argv);
+    //gst_init(&argc, &argv);
 
     try 
     {

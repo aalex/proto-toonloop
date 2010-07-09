@@ -5,6 +5,8 @@
 #include <gdk/gdk.h>
 #include <GL/glx.h>
 
+void _set_view(float ratio);
+
 class Gui
 {
     public:
@@ -17,9 +19,12 @@ class Gui
         GtkWidget *drawing_area_;
         GtkWidget *window_;
         GLXContext glx_context_;
+        static void on_realize(GtkWidget *widget, gpointer data);
         static void on_delete_event(GtkWidget* widget, GdkEvent* event, gpointer data);
         static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
+        static gboolean on_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
+        static gboolean on_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data);
         static int onWindowStateEvent(_GtkWidget *widget, _GdkEventWindowState *event, void *data);
         void toggleFullscreen(GtkWidget* widget);
         void makeFullscreen(GtkWidget* widget);
