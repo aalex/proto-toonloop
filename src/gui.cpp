@@ -259,6 +259,9 @@ Gui::Gui() :
     drawing_area_ = gtk_drawing_area_new();
     gtk_container_add(GTK_CONTAINER(window_), drawing_area_);
     
+    /* Set OpenGL-capability to the widget. */
+    gtk_widget_set_gl_capability(drawing_area_, glconfig, NULL, TRUE, GDK_GL_RGBA_TYPE);
+    
     g_signal_connect_after(G_OBJECT(drawing_area_), "realize", G_CALLBACK(on_realize), this);
     g_signal_connect(G_OBJECT(drawing_area_), "configure_event", G_CALLBACK(on_configure_event), this);
     g_signal_connect(G_OBJECT(drawing_area_), "expose_event", G_CALLBACK(on_expose_event), this);
