@@ -68,6 +68,7 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
     GstBuffer *buffer = 0;
     static size_t size = 0;
 
+    //std::cout << "on_new_buffer" << std::endl;
     /// FIXME: maybe replace with Concurrent queue?
     /* get the buffer from appsink */
     buffer = gst_app_sink_pull_buffer(GST_APP_SINK(element));
@@ -81,10 +82,12 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
     if  (newSize != 0) {
         if (size != newSize) {
             size = newSize;
-            std::cout << "reallocating the last frame data buffer with size " << size << std::endl;
+            std::cout << "reallocating data buffer with size " << size << std::endl;
             delete [] pipeline->last_frame_data_;
             pipeline->last_frame_data_ = new char[size];
         }
+        
+        std::cout << "memcpy"; // << std::endl;
         memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
         pipeline->has_new_live_input_data_ = true; 
     }
