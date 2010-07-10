@@ -87,7 +87,7 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
             pipeline->last_frame_data_ = new char[size];
         }
         
-        std::cout << "memcpy"; // << std::endl;
+        std::cout << "memcpy" << std::endl;
         memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
         pipeline->has_new_live_input_data_ = true; 
     }

@@ -3,6 +3,12 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gtk/gtkgl.h>
+/*** Use OpenGL extensions. ***/
+/* #include <gdk/gdkglglext.h> */
+#ifdef G_OS_WIN32
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#endif
 #include <iostream>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -15,7 +21,120 @@
 #include "gui.h"
 #include "application.h"
 
+#define TIMEOUT_INTERVAL 10
 
+
+/**************************************************************************
+ * Global variable declarations.
+ **************************************************************************/
+
+static gboolean animate = FALSE;
+
+/**************************************************************************
+ * The following section contains the function prototype declarations.
+ **************************************************************************/
+// TODO: move to the header file
+static void         timeout_add       (GtkWidget   *widget);
+static void         timeout_remove    (GtkWidget   *widget);
+static void         toggle_animation  (GtkWidget   *widget);
+static gboolean timeout (GtkWidget *widget);
+
+/***
+ *** The timeout function. Often in animations,
+ *** timeout functions are suitable for continous
+ *** frame updates.
+ ***/
+static gboolean
+timeout (GtkWidget *widget)
+{
+  g_print (".");
+
+  /*** Fill in the details here ***/
+
+  /* Invalidate the whole window. */
+  gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
+
+  /* Update synchronously. */
+  gdk_window_process_updates (widget->window, FALSE);
+
+  return TRUE;
+}
+
+
+/**************************************************************************
+ * The following section contains the timeout function management routines.
+ **************************************************************************/
+
+/***
+ *** Helper functions to add or remove the timeout function.
+ ***/
+
+static guint timeout_id = 0;
+
+static void
+timeout_add (GtkWidget *widget)
+{
+  if (timeout_id == 0)
+    {
+      timeout_id = g_timeout_add (TIMEOUT_INTERVAL,
+                                  (GSourceFunc) timeout,
+                                  widget);
+    }
+}
+
+static void
+timeout_remove (GtkWidget *widget)
+{
+  if (timeout_id != 0)
+    {
+      g_source_remove (timeout_id);
+      timeout_id = 0;
+    }
+}
+
+/***
+ *** The "map_event" signal handler. Any processing required when the
+ *** OpenGL-capable drawing area is mapped should be done here.
+ ***/
+static gboolean map_event (GtkWidget *widget, GdkEvent  *event, gpointer   data)
+{
+    g_print ("%s: \"map_event\":\n", gtk_widget_get_name (widget));
+    if (animate)
+        timeout_add (widget);
+  
+    return TRUE;
+}
+
+/***
+ *** The "unmap_event" signal handler. Any processing required when the
+ *** OpenGL-capable drawing area is unmapped should be done here.
+ ***/
+static gboolean unmap_event (GtkWidget *widget, GdkEvent  *event, gpointer   data)
+{
+    g_print ("%s: \"unmap_event\":\n", gtk_widget_get_name (widget));
+    timeout_remove (widget);
+
+    return TRUE;
+}
+
+/***
+ *** Toggle animation.
+ ***/
+static void
+toggle_animation (GtkWidget *widget)
+{
+  animate = !animate;
+
+  if (animate)
+    {
+      timeout_add (widget);
+    }
+  else
+    {
+      timeout_remove (widget);
+      gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
+    }
+}
 gboolean Gui::onWindowStateEvent(GtkWidget* widget, GdkEventWindowState *event, gpointer data)
 {
     Gui *context = static_cast<Gui*>(data);
@@ -25,6 +144,24 @@ gboolean Gui::onWindowStateEvent(GtkWidget* widget, GdkEventWindowState *event, 
     else
         context->showCursor();
     return TRUE;
+}
+
+/***
+ *** The "visibility_notify_event" signal handler. Any processing required
+ *** when the OpenGL-capable drawing area is visually obscured should be
+ *** done here.
+ ***/
+static gboolean visibility_notify_event (GtkWidget *widget, GdkEventVisibility *event, gpointer data)
+{
+  if (animate)
+    {
+      if (event->state == GDK_VISIBILITY_FULLY_OBSCURED)
+	timeout_remove (widget);
+      else
+	timeout_add (widget);
+    }
+
+  return TRUE;
 }
 
 void Gui::hideCursor()
@@ -75,6 +212,10 @@ gboolean Gui::key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer da
 }
 /**
  * Handles the "realize" signal to take any necessary actions when the widget is instantiated on a particular display. (Create GDK resources in response to this signal.) 
+ * 
+ * The "realize" signal handler. All the OpenGL initialization
+ * should be performed here, such as default background colour,
+ * certain states etc.
  */
 void Gui::on_realize(GtkWidget *widget, gpointer data)
 {
@@ -97,6 +238,29 @@ void Gui::on_realize(GtkWidget *widget, gpointer data)
     _set_view(widget->allocation.width / float(widget->allocation.height));
     gdk_gl_drawable_gl_end(gldrawable);
     /*** OpenGL END ***/
+}
+
+/***
+ *** The "unrealize" signal handler. Any processing required when
+ *** the OpenGL-capable window is unrealized should be done here.
+ ***/
+static void
+unrealize (GtkWidget *widget,
+	   gpointer   data)
+{
+  GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
+  GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
+
+  g_print ("%s: \"unrealize\"\n", gtk_widget_get_name (widget));
+
+  /*** OpenGL BEGIN ***/
+  if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext))
+    return;
+
+  /*** Fill in the details here. ***/
+
+  gdk_gl_drawable_gl_end (gldrawable);
+  /*** OpenGL END ***/
 }
 
 void Gui::on_delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
@@ -146,6 +310,11 @@ void _set_view(float ratio)
 }
 /**
  * Handles the "configure_event" signal to take any necessary actions when the widget changes size. 
+ * 
+ * The "configure_event" signal handler. Any processing required when
+ * the OpenGL-capable drawing area is re-configured should be done here.
+ * Almost always it will be used to resize the OpenGL viewport when
+ * the window is resized.
  */
 gboolean Gui::on_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpointer data)
 {
@@ -222,6 +391,10 @@ void _draw()
 }
 /**
  * Handles the "expose_event" signal to redraw the contents of the widget.
+ * 
+ * The "expose_event" signal handler. All the OpenGL re-drawing should
+ * be done here. This is repeatedly called as the painting routine
+ * every time the 'expose'/'draw' event is signalled.
  */
 gboolean Gui::on_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -300,6 +473,13 @@ Gui::Gui() :
     g_signal_connect_after(G_OBJECT(drawing_area_), "realize", G_CALLBACK(on_realize), this);
     g_signal_connect(G_OBJECT(drawing_area_), "configure_event", G_CALLBACK(on_configure_event), this);
     g_signal_connect(G_OBJECT(drawing_area_), "expose_event", G_CALLBACK(on_expose_event), this);
+    g_signal_connect (G_OBJECT(drawing_area_), "unrealize", G_CALLBACK(unrealize), NULL);
+
+    /* For timeout function. */
+    g_signal_connect (G_OBJECT (drawing_area_), "map_event", G_CALLBACK(map_event), NULL);
+    g_signal_connect (G_OBJECT (drawing_area_), "unmap_event", G_CALLBACK(unmap_event), NULL);
+    g_signal_connect (G_OBJECT (drawing_area_), "visibility_notify_event", G_CALLBACK(visibility_notify_event), NULL);
+    
     g_signal_connect(G_OBJECT(window_), "delete-event", G_CALLBACK(on_delete_event), this);
     g_signal_connect(G_OBJECT(window_), "key-press-event", G_CALLBACK(key_press_event), this);
     // add listener for window-state-event to detect fullscreenness
@@ -314,5 +494,7 @@ Gui::Gui() :
     gtk_widget_set_double_buffered(drawing_area_, FALSE);
   
     gtk_widget_show_all(window_);
+    
+    toggle_animation(drawing_area_);
 }
 
