@@ -27,37 +27,33 @@
 /**************************************************************************
  * Global variable declarations.
  **************************************************************************/
-
+// TODO: remove them
 static gboolean animate = FALSE;
+static guint timeout_id = 0;
 
 /**************************************************************************
  * The following section contains the function prototype declarations.
  **************************************************************************/
 // TODO: move to the header file
-static void         timeout_add       (GtkWidget   *widget);
-static void         timeout_remove    (GtkWidget   *widget);
-static void         toggle_animation  (GtkWidget   *widget);
-static gboolean timeout (GtkWidget *widget);
+static void timeout_add(GtkWidget* widget);
+static void timeout_remove(GtkWidget* widget);
+static void toggle_animation(GtkWidget* widget);
+static gboolean timeout (GtkWidget* widget);
 
 /***
  *** The timeout function. Often in animations,
  *** timeout functions are suitable for continous
  *** frame updates.
  ***/
-static gboolean
-timeout (GtkWidget *widget)
+static gboolean timeout(GtkWidget *widget)
 {
-  g_print (".");
-
-  /*** Fill in the details here ***/
-
-  /* Invalidate the whole window. */
-  gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
-
-  /* Update synchronously. */
-  gdk_window_process_updates (widget->window, FALSE);
-
-  return TRUE;
+    //g_print (".");
+    /*** Fill in the details here ***/
+    /* Invalidate the whole window. */
+    gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
+    /* Update synchronously. */
+    gdk_window_process_updates (widget->window, FALSE);
+    return TRUE;
 }
 
 
@@ -69,16 +65,12 @@ timeout (GtkWidget *widget)
  *** Helper functions to add or remove the timeout function.
  ***/
 
-static guint timeout_id = 0;
-
 static void
 timeout_add (GtkWidget *widget)
 {
   if (timeout_id == 0)
     {
-      timeout_id = g_timeout_add (TIMEOUT_INTERVAL,
-                                  (GSourceFunc) timeout,
-                                  widget);
+      timeout_id = g_timeout_add(TIMEOUT_INTERVAL, (GSourceFunc) timeout, widget);
     }
 }
 
@@ -87,7 +79,7 @@ timeout_remove (GtkWidget *widget)
 {
   if (timeout_id != 0)
     {
-      g_source_remove (timeout_id);
+      g_source_remove(timeout_id);
       timeout_id = 0;
     }
 }
@@ -96,7 +88,7 @@ timeout_remove (GtkWidget *widget)
  *** The "map_event" signal handler. Any processing required when the
  *** OpenGL-capable drawing area is mapped should be done here.
  ***/
-static gboolean map_event (GtkWidget *widget, GdkEvent  *event, gpointer   data)
+static gboolean map_event(GtkWidget *widget, GdkEvent  *event, gpointer   data)
 {
     g_print ("%s: \"map_event\":\n", gtk_widget_get_name (widget));
     if (animate)
@@ -109,19 +101,17 @@ static gboolean map_event (GtkWidget *widget, GdkEvent  *event, gpointer   data)
  *** The "unmap_event" signal handler. Any processing required when the
  *** OpenGL-capable drawing area is unmapped should be done here.
  ***/
-static gboolean unmap_event (GtkWidget *widget, GdkEvent  *event, gpointer   data)
+static gboolean unmap_event(GtkWidget *widget, GdkEvent  *event, gpointer   data)
 {
     g_print ("%s: \"unmap_event\":\n", gtk_widget_get_name (widget));
     timeout_remove (widget);
-
     return TRUE;
 }
 
 /***
  *** Toggle animation.
  ***/
-static void
-toggle_animation (GtkWidget *widget)
+static void toggle_animation(GtkWidget *widget)
 {
   animate = !animate;
 
@@ -135,6 +125,10 @@ toggle_animation (GtkWidget *widget)
       gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
     }
 }
+
+/**
+ * Called when the window has become fullscreen or not.
+ */
 gboolean Gui::onWindowStateEvent(GtkWidget* widget, GdkEventWindowState *event, gpointer data)
 {
     Gui *context = static_cast<Gui*>(data);
@@ -146,21 +140,20 @@ gboolean Gui::onWindowStateEvent(GtkWidget* widget, GdkEventWindowState *event, 
     return TRUE;
 }
 
-/***
- *** The "visibility_notify_event" signal handler. Any processing required
- *** when the OpenGL-capable drawing area is visually obscured should be
- *** done here.
- ***/
-static gboolean visibility_notify_event (GtkWidget *widget, GdkEventVisibility *event, gpointer data)
+/**
+ * The "visibility_notify_event" signal handler. Any processing required
+ * when the OpenGL-capable drawing area is visually obscured should be
+ * done here.
+ */
+static gboolean visibility_notify_event(GtkWidget *widget, GdkEventVisibility *event, gpointer data)
 {
   if (animate)
     {
       if (event->state == GDK_VISIBILITY_FULLY_OBSCURED)
-	timeout_remove (widget);
+	timeout_remove(widget);
       else
-	timeout_add (widget);
+	timeout_add(widget);
     }
-
   return TRUE;
 }
 
@@ -494,7 +487,7 @@ Gui::Gui() :
     gtk_widget_set_double_buffered(drawing_area_, FALSE);
   
     gtk_widget_show_all(window_);
-    
+    // Let's start the constant rendering.
     toggle_animation(drawing_area_);
 }
 
