@@ -20,6 +20,7 @@ class Gui
         GtkWidget *drawing_area_;
         GtkWidget *window_;
         //GLXContext glx_context_;
+        bool create_live_input_texture();
         static void on_realize(GtkWidget *widget, gpointer data);
         static void on_delete_event(GtkWidget* widget, GdkEvent* event, gpointer data);
         static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data);
