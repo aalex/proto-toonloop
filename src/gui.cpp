@@ -41,11 +41,11 @@ static void timeout_remove(GtkWidget* widget);
 static void toggle_animation(GtkWidget* widget);
 static gboolean timeout (GtkWidget* widget);
 
-/***
- *** The timeout function. Often in animations,
- *** timeout functions are suitable for continous
- *** frame updates.
- ***/
+/*
+ * The timeout function. Often in animations,
+ * timeout functions are suitable for continous
+ * frame updates.
+ */
 static gboolean timeout(GtkWidget *widget)
 {
     //g_print (".");
@@ -62,44 +62,41 @@ static gboolean timeout(GtkWidget *widget)
  * The following section contains the timeout function management routines.
  **************************************************************************/
 
-/***
- *** Helper functions to add or remove the timeout function.
- ***/
+/**
+ * Helper functions to add or remove the timeout function.
+ */
 
 static void timeout_add (GtkWidget *widget)
 {
-  if (timeout_id == 0)
-    {
-      timeout_id = g_timeout_add(TIMEOUT_INTERVAL, (GSourceFunc) timeout, widget);
+    if (timeout_id == 0) {
+        timeout_id = g_timeout_add(TIMEOUT_INTERVAL, (GSourceFunc) timeout, widget);
     }
 }
 
 static void timeout_remove (GtkWidget *widget)
 {
-  if (timeout_id != 0)
-    {
-      g_source_remove(timeout_id);
-      timeout_id = 0;
+    if (timeout_id != 0) {
+        g_source_remove(timeout_id);
+        timeout_id = 0;
     }
 }
 
-/***
- *** The "map_event" signal handler. Any processing required when the
- *** OpenGL-capable drawing area is mapped should be done here.
- ***/
+/**
+ * The "map_event" signal handler. Any processing required when the
+ * OpenGL-capable drawing area is mapped should be done here.
+ */
 static gboolean map_event(GtkWidget *widget, GdkEvent  *event, gpointer   data)
 {
-    g_print ("%s: \"map_event\":\n", gtk_widget_get_name (widget));
+    g_print("%s: \"map_event\":\n", gtk_widget_get_name (widget));
     if (animate)
         timeout_add (widget);
-  
     return TRUE;
 }
 
-/***
- *** The "unmap_event" signal handler. Any processing required when the
- *** OpenGL-capable drawing area is unmapped should be done here.
- ***/
+/**
+ * The "unmap_event" signal handler. Any processing required when the
+ * OpenGL-capable drawing area is unmapped should be done here.
+ */
 static gboolean unmap_event(GtkWidget *widget, GdkEvent  *event, gpointer   data)
 {
     g_print ("%s: \"unmap_event\":\n", gtk_widget_get_name (widget));
@@ -107,21 +104,18 @@ static gboolean unmap_event(GtkWidget *widget, GdkEvent  *event, gpointer   data
     return TRUE;
 }
 
-/***
- *** Toggle animation.
- ***/
+/**
+ * Toggle animation.
+ */
 static void toggle_animation(GtkWidget *widget)
 {
-  animate = !animate;
+    animate = !animate;
 
-  if (animate)
-    {
-      timeout_add (widget);
-    }
-  else
-    {
-      timeout_remove (widget);
-      gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
+    if (animate) {
+        timeout_add (widget);
+    } else {
+        timeout_remove (widget);
+        gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
     }
 }
 
@@ -130,12 +124,12 @@ static void toggle_animation(GtkWidget *widget)
  */
 gboolean Gui::onWindowStateEvent(GtkWidget* widget, GdkEventWindowState *event, gpointer data)
 {
-    Gui *context = static_cast<Gui*>(data);
-    context->isFullscreen_ = (event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN);
-    if (context->isFullscreen_)
-        context->hideCursor();
+    Gui *gui = static_cast<Gui*>(data);
+    gui->isFullscreen_ = (event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN);
+    if (gui->isFullscreen_)
+        gui->hideCursor();
     else
-        context->showCursor();
+        gui->showCursor();
     return TRUE;
 }
 
@@ -182,11 +176,11 @@ void Gui::showCursor()
 
 gboolean Gui::key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    Gui *context = static_cast<Gui*>(data);
+    Gui *gui = static_cast<Gui*>(data);
     switch (event->keyval)
     {
         case GDK_Escape:
-            context->toggleFullscreen(widget);
+            gui->toggleFullscreen(widget);
             break;
         case GDK_q:
             // Quit application on ctrl-q, this quits the main loop
@@ -211,9 +205,6 @@ gboolean Gui::key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer da
  */
 void Gui::on_realize(GtkWidget *widget, gpointer data)
 {
-
-    Gui *context = static_cast<Gui*>(data);
-
     GdkGLContext *glcontext = gtk_widget_get_gl_context(widget);
     GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
   
@@ -222,12 +213,13 @@ void Gui::on_realize(GtkWidget *widget, gpointer data)
     {
         return;
     }
-    //context->glx_context_ = glXGetCurrentContext();
+    //Gui *gui = static_cast<Gui*>(data);
+    //gui->glx_context_ = glXGetCurrentContext();
+    
     glDisable(GL_DEPTH_TEST);
-  
     glClearColor(0.0, 0.0, 0.0, 1.0); // black background
     glViewport(0, 0, widget->allocation.width, widget->allocation.height);
-    _set_view(widget->allocation.width / float(widget->allocation.height));
+    _set_view(widget->allocation.width, widget->allocation.height);
     gdk_gl_drawable_gl_end(gldrawable);
     /*** OpenGL END ***/
 }
@@ -287,17 +279,34 @@ void Gui::makeUnfullscreen(GtkWidget *widget)
  * Coordinates should give a rendering area height of 1
  * and a width of 1.33, when in 4:3 ratio.
 */
-void _set_view(float ratio)
+void _set_view(int width, int height)
 {
-    float w = ratio;
-    float h = 1.0;
+    //glViewport(0, 0, width, height);
+    // if >= 4/3:
+    float w = float(width) / float(height);
+    float h = 1.0; // constant height
+
+    // make sure the aspect ratio of the window is not less wide than 4:3
+    if (w < 4.0f/3.0f)
+    {
+        h = (float(height) / float(width)) * 1.333333f;
+        w = 1.3333333333f; // constant width
+    }
+    //std::cout << "Resized window to " << width << "x" << height << ". Ratio is " << w << "x" << h << std::endl; 
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-w, w, -h, h, -1.0, 1.0);
-
     glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    //glEnable (GL_LINE_SMOOTH);
+    //glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    //
+    // enables transparency blending:
+    glEnable(GL_BLEND); 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 }
 /**
  * Handles the "configure_event" signal to take any necessary actions when the widget changes size. 
@@ -320,7 +329,7 @@ gboolean Gui::on_configure_event(GtkWidget *widget, GdkEventConfigure *event, gp
         return FALSE;
     }
     glViewport(0, 0, widget->allocation.width, widget->allocation.height);
-    _set_view(widget->allocation.width / float(widget->allocation.height));
+    _set_view(widget->allocation.width, widget->allocation.height);
     gdk_gl_drawable_gl_end(gldrawable);
     /*** OpenGL END ***/
     return TRUE;
@@ -333,9 +342,9 @@ bool Gui::create_live_input_texture()
 {
     Pipeline pipeline = Application::get_instance().get_pipeline();
     
-    std::cout << "create_live_input_texture" << std::endl;
+    //std::cout << "create_live_input_texture" << std::endl;
     if (pipeline.has_new_live_input_data_) {
-        std::cout << "has_new_live_input_data_" << std::endl;
+        std::cout << "Live input texture needs to be updated" << std::endl;
         pipeline.has_new_live_input_data_ = false;
         
         if (! live_input_texture_created_)
@@ -349,27 +358,15 @@ bool Gui::create_live_input_texture()
         int height = pipeline.get_height();
         //char* buf = pipeline.last_frame_data_;
         glBindTexture(GL_TEXTURE_RECTANGLE_ARB, live_input_texture_);
-        std::cout << "called glBindTexture" << std::endl;
-        std::cout << "Will call glTexImage2D for an image of " << width << "x" << height << std::endl;
-        /*
-        glTexImage2D(
-            GLenum  	target, 
-            GLint  	level, 
-            GLint  	internalFormat, 
-            GLsizei  	width, 
-            GLsizei  	height, 
-            GLint  	border, 
-            GLenum  	format, 
-            GLenum  	type, 
-            const GLvoid *  	data);
-        */
+        //std::cout << "called glBindTexture" << std::endl;
+        //std::cout << "Will call glTexImage2D for an image of " << width << "x" << height << std::endl;
         // TODO: update texture, don't create a new one each time
         // HERE I am working:
         // GL_UNSIGNED_BYTE
         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, 
             PIXEL_TYPE, 
             static_cast<GLvoid *>(pipeline.last_frame_data_));
-        std::cout << "called glTexImage2D" << std::endl;
+        //std::cout << "called glTexImage2D" << std::endl;
         // TODO: simplify those parameters
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

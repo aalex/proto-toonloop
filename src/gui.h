@@ -5,7 +5,7 @@
 #include <gdk/gdk.h>
 #include <GL/glx.h>
 
-void _set_view(float ratio);
+void _set_view(int width, int height);
 
 class Gui
 {
