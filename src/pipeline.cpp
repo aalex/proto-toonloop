@@ -74,6 +74,7 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
     buffer = gst_app_sink_pull_buffer(GST_APP_SINK(element));
 
     // push the buffer
+    // The size in bytes of the data in this buffer:
     size_t newSize = GST_BUFFER_SIZE(buffer);
     //std::cout << "Got a buffer of size: " <<  size << std::endl;
 
@@ -106,6 +107,24 @@ int Pipeline::get_height()
     return image_height_;
 }
 
+// TODO:  create a live input texture class with the following attributes and methods:
+// LiveInputTexture
+//     char* raw_data_;
+//     int width_
+//     int height_
+//     bool has_new_;
+// 
+//     int get_height();
+//     int get_width();
+//     void* get_address();
+//     bool has_new();
+//     void set_has_new(bool value);
+
+/**
+ * Constructor of the Pipeline.
+ * 
+ * This is where we set up the GStreamer pipeline for live video input.
+ */
 Pipeline::Pipeline()
 {
     has_new_live_input_data_ = false;
@@ -144,8 +163,7 @@ Pipeline::Pipeline()
     g_assert(appsink0_);
     
     // add elements
-    if (!videosrc_ or !capsfilter0)
-    {
+    if (!videosrc_ or !capsfilter0) {
         g_print("one element could not be found \n");
         exit(1);
     }
@@ -198,13 +216,11 @@ Pipeline::Pipeline()
     /* run */
     GstStateChangeReturn ret;
     ret = gst_element_set_state(GST_ELEMENT(pipeline_), GST_STATE_PLAYING);
-    if (ret == GST_STATE_CHANGE_FAILURE)
-    {
+    if (ret == GST_STATE_CHANGE_FAILURE) {
         g_print ("Failed to start up pipeline!\n");
         /* check if there is an error message with details on the bus */
         GstMessage* msg = gst_bus_poll (bus, GST_MESSAGE_ERROR, 0);
-        if (msg)
-        {
+        if (msg) {
           GError *err = NULL;
           gst_message_parse_error (msg, &err, NULL);
           g_print ("ERROR: %s\n", err->message);

@@ -22,6 +22,7 @@
 #include "application.h"
 
 #define TIMEOUT_INTERVAL 10
+static const GLenum PIXEL_TYPE = GL_UNSIGNED_SHORT_5_6_5;
 
 
 /**************************************************************************
@@ -65,8 +66,7 @@ static gboolean timeout(GtkWidget *widget)
  *** Helper functions to add or remove the timeout function.
  ***/
 
-static void
-timeout_add (GtkWidget *widget)
+static void timeout_add (GtkWidget *widget)
 {
   if (timeout_id == 0)
     {
@@ -74,8 +74,7 @@ timeout_add (GtkWidget *widget)
     }
 }
 
-static void
-timeout_remove (GtkWidget *widget)
+static void timeout_remove (GtkWidget *widget)
 {
   if (timeout_id != 0)
     {
@@ -237,8 +236,7 @@ void Gui::on_realize(GtkWidget *widget, gpointer data)
  *** The "unrealize" signal handler. Any processing required when
  *** the OpenGL-capable window is unrealized should be done here.
  ***/
-static void
-unrealize (GtkWidget *widget,
+static void unrealize (GtkWidget *widget,
 	   gpointer   data)
 {
   GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
@@ -352,25 +350,41 @@ bool Gui::create_live_input_texture()
         //char* buf = pipeline.last_frame_data_;
         glBindTexture(GL_TEXTURE_RECTANGLE_ARB, live_input_texture_);
         std::cout << "called glBindTexture" << std::endl;
-        std::cout << "TODO: call glTexImage2D" << std::endl;
+        std::cout << "Will call glTexImage2D for an image of " << width << "x" << height << std::endl;
         /*
-        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, static_cast<GLvoid *>(pipeline.last_frame_data_));
+        glTexImage2D(
+            GLenum  	target, 
+            GLint  	level, 
+            GLint  	internalFormat, 
+            GLsizei  	width, 
+            GLsizei  	height, 
+            GLint  	border, 
+            GLenum  	format, 
+            GLenum  	type, 
+            const GLvoid *  	data);
+        */
+        // TODO: update texture, don't create a new one each time
+        // HERE I am working:
+        // GL_UNSIGNED_BYTE
+        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, 
+            PIXEL_TYPE, 
+            static_cast<GLvoid *>(pipeline.last_frame_data_));
         std::cout << "called glTexImage2D" << std::endl;
         // TODO: simplify those parameters
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        */
     }
     return true;
 }
 
-
-// draws the stuff
+/**
+ * Draws the stuff
+ */
 void _draw()
 {
-    // DRAW STUFF HERE
+    // Gui gui = Application::get_instance().get_gui();
     std::cout << "drawing" << std::endl;
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
     glColor4f(1.0, 0.8, 0.2, 1.0);
