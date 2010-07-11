@@ -354,8 +354,6 @@ bool Gui::create_live_input_texture()
         std::cout << "called glBindTexture" << std::endl;
         std::cout << "TODO: call glTexImage2D" << std::endl;
         /*
-        std::cout << "will call glTexImage2D with data of size " << sizeof(pipeline.last_frame_data_) << std::endl;
-        
         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, static_cast<GLvoid *>(pipeline.last_frame_data_));
         std::cout << "called glTexImage2D" << std::endl;
         // TODO: simplify those parameters
