@@ -384,7 +384,7 @@ bool Gui::create_live_input_texture()
  */
 void _draw()
 {
-    // Gui gui = Application::get_instance().get_gui();
+    
     std::cout << "drawing" << std::endl;
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
     glColor4f(1.0, 0.8, 0.2, 1.0);
@@ -402,7 +402,15 @@ void _draw()
         draw::draw_line(float(x), -2.0, float(x), 2.0);
         draw::draw_line(-2.0, float(x), 2.0, float(x));
     }
-    //TODO: glEnable(GL_TEXTURE_RECTANGLE_ARB);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_TEXTURE_RECTANGLE_ARB);
+    Gui gui = Application::get_instance().get_gui();
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, gui.live_input_texture_);
+    Pipeline pipeline = Application::get_instance().get_pipeline();
+    glPushMatrix();
+    glScalef(0.6666, 0.5, 1.0);
+    draw::draw_textured_square(pipeline.get_width(), pipeline.get_height());
+    glPopMatrix();
 }
 /**
  * Handles the "expose_event" signal to redraw the contents of the widget.

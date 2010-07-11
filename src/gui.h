@@ -13,10 +13,10 @@ class Gui
         Gui(); 
         ~Gui() {};
         void toggleFullscreen() { toggleFullscreen(window_); } // no argument version of the same method below.
+        GLuint live_input_texture_;
 
     private:
         bool live_input_texture_created_;
-        GLuint live_input_texture_;
         GtkWidget *drawing_area_;
         GtkWidget *window_;
         //GLXContext glx_context_;
