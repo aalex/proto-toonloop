@@ -74,7 +74,7 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
     buffer = gst_app_sink_pull_buffer(GST_APP_SINK(element));
 
     // push the buffer
-    size_t newSize = GST_BUFFER_SIZE (buffer);
+    size_t newSize = GST_BUFFER_SIZE(buffer);
     //std::cout << "Got a buffer of size: " <<  size << std::endl;
 
     Pipeline* pipeline = static_cast<Pipeline*>(context);
@@ -87,19 +87,34 @@ void Pipeline::on_new_buffer(GstElement *element, Pipeline *context)
             pipeline->last_frame_data_ = new char[size];
         }
         
-        std::cout << "memcpy" << std::endl;
+        std::cout << "memcpy of size " << newSize << std::endl;
         memcpy(pipeline->last_frame_data_, GST_BUFFER_DATA(buffer), size);
+        std::cout << "size of last_frame_data_ " << sizeof(pipeline->last_frame_data_) << std::endl;
+        
         pipeline->has_new_live_input_data_ = true; 
     }
     /* we don't need the appsink buffer anymore */
     gst_buffer_unref(buffer);
 }
 
+int Pipeline::get_width()
+{
+    return image_width_;
+}
+int Pipeline::get_height()
+{
+    return image_height_;
+}
+
 Pipeline::Pipeline()
 {
+    has_new_live_input_data_ = false;
     last_frame_data_ = new char[0]; // IMPORTANT!
     int width = 640;
     int height = 480;
+    image_width_ = width; // TODO: get from the actual size of images we get
+    image_height_ = height; // TODO: get from the actual size of images we get
+    
     pipeline_ = NULL;
     
     pipeline_ = GST_PIPELINE(gst_pipeline_new("pipeline"));

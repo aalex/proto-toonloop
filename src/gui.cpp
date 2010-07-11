@@ -335,20 +335,29 @@ bool Gui::create_live_input_texture()
 {
     Pipeline pipeline = Application::get_instance().get_pipeline();
     
+    std::cout << "create_live_input_texture" << std::endl;
     if (pipeline.has_new_live_input_data_) {
         std::cout << "has_new_live_input_data_" << std::endl;
         pipeline.has_new_live_input_data_ = false;
-        /*
+        
         if (! live_input_texture_created_)
         {
             live_input_texture_created_ = true;
+            std::cout << "live_input_texture_created_ = true" << std::endl;
             glGenTextures(1, &live_input_texture_);
+            std::cout << "called glGenTextures" << std::endl;
         }
-        int width = 
-        int height = 
-        char* buf = 
+        int width = pipeline.get_width(); 
+        int height = pipeline.get_height();
+        //char* buf = pipeline.last_frame_data_;
         glBindTexture(GL_TEXTURE_RECTANGLE_ARB, live_input_texture_);
-        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buf);
+        std::cout << "called glBindTexture" << std::endl;
+        std::cout << "TODO: call glTexImage2D" << std::endl;
+        /*
+        std::cout << "will call glTexImage2D with data of size " << sizeof(pipeline.last_frame_data_) << std::endl;
+        
+        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, static_cast<GLvoid *>(pipeline.last_frame_data_));
+        std::cout << "called glTexImage2D" << std::endl;
         // TODO: simplify those parameters
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -402,6 +411,7 @@ gboolean Gui::on_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    gui->create_live_input_texture();
     _draw();
 
     if (gdk_gl_drawable_is_double_buffered(gldrawable))

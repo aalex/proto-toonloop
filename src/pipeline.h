@@ -9,11 +9,15 @@ class Pipeline
 {
     public:
         void stop();
+        int get_width();
+        int get_height();
         Pipeline();
         ~Pipeline();
         bool has_new_live_input_data_;
         char* last_frame_data_;
     private:
+        int image_width_;
+        int image_height_;
         GstElement* videosrc_;
         GstElement* appsink0_;
         GstPipeline* pipeline_;
