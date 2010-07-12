@@ -406,7 +406,7 @@ void _draw()
     Pipeline pipeline = Application::get_instance().get_pipeline();
     glPushMatrix();
     glScalef(0.6666, 0.5, 1.0);
-    draw::draw_textured_square(pipeline.get_width(), pipeline.get_height());
+    draw::draw_vertically_flipped_textured_square(pipeline.get_width(), pipeline.get_height());
     glPopMatrix();
 }
 /**
