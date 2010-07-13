@@ -28,24 +28,34 @@ AC_CHECK_LIB([pthread],[pthread_exit],[AC_SUBST([LIBTHREAD_CXXFLAGS],["-lpthread
 AC_CHECK_LIB([m],[sin],[AC_SUBST([LIBM_CXXFLAGS],["-lm"])])
 AC_CHECK_LIB([lo],[lo_send_internal],[AC_SUBST([LIBLO_CXXFLAGS],["-llo"])])
 
-# GTK and GST
-PKG_CHECK_MODULES([GST], [gstreamer-gl-0.10 >= 0.10.0 gstreamer-0.10 >= 0.10.0   gstreamer-interfaces-0.10 >= 0.10.24 gtk+-2.0 >= 2.12.9 glib-2.0 >= 2.16.6])
+# GTK
 PKG_CHECK_MODULES([GTK], [gtk+-2.0])
 PKG_CHECK_MODULES([GDK], [gdk-2.0])
 
+# GStreamer
+PKG_CHECK_MODULES([GST], [gstreamer-gl-0.10 >= 0.10.0 gstreamer-0.10 >= 0.10.0   gstreamer-interfaces-0.10 >= 0.10.24 gtk+-2.0 >= 2.12.9 glib-2.0 >= 2.16.6])
+AC_SUBST([GST_LIBS])
+AC_SUBST([GST_CFLAGS])
 
-#Trying to set GSTAPP using pkg-config
+# GST appsink 
 PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
 if test "x${have_gstreamer_app}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
 fi
-
-
-
-PKG_CHECK_MODULES([GTKGLEXT], [gtkglext-1.0 >= 1.0])
-AC_SUBST([GST_LIBS])
 AC_SUBST([GSTAPP_LIBS])
-AC_SUBST([GST_CFLAGS])
+
+# GtkGlExt
+PKG_CHECK_MODULES([GTKGLEXT], [gtkglext-1.0 >= 1.0])
+
+# Clutter
+PKG_CHECK_MODULES([CLUTTER], [clutter-1.0 >= 1.0])
+AC_SUBST([CLUTTER_LIBS])
+AC_SUBST([CLUTTER_CFLAGS])
+
+# Clutter-GTK
+PKG_CHECK_MODULES([CLUTTERGTK], [clutter-gtk-0.10 >= 0.10])
+AC_SUBST([CLUTTERGTK_LIBS])
+AC_SUBST([CLUTTERGTK_CFLAGS])
 
 # BOOST
 AX_BOOST_BASE([1.35])
