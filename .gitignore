@@ -31,3 +31,6 @@ tests/check_classes
 tests/check_looper
 tests/check_threads
 src/toonloop
+missing
+src/gtk-clutter-proto
+
