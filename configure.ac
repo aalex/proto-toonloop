@@ -39,13 +39,17 @@ PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstr
 if test "x${have_gstreamer_app}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
 fi
-
-
-
-PKG_CHECK_MODULES([GTKGLEXT], [gtkglext-1.0 >= 1.0])
+AC_SUBST([GST_CFLAGS])
 AC_SUBST([GST_LIBS])
 AC_SUBST([GSTAPP_LIBS])
-AC_SUBST([GST_CFLAGS])
+
+# Clutter
+PKG_CHECK_MODULES([CLUTTER], [clutter-1.0])
+AC_SUBST([CLUTTER_LIBS])
+AC_SUBST([CLUTTER_CFLAGS])
+
+# GtkGlExt
+PKG_CHECK_MODULES([GTKGLEXT], [gtkglext-1.0 >= 1.0])
 
 # BOOST
 AX_BOOST_BASE([1.35])
