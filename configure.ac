@@ -10,7 +10,7 @@ AM_INIT_AUTOMAKE()
 
 # Check for C and C++ compilers
 AC_PROG_CXX
-AC_PROG_CC
+# AC_PROG_CC
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -27,6 +27,24 @@ AC_CHECK_FUNCS([inet_ntoa memset socket])
 AC_CHECK_LIB([pthread],[pthread_exit],[AC_SUBST([LIBTHREAD_CXXFLAGS],["-lpthread"])])
 AC_CHECK_LIB([m],[sin],[AC_SUBST([LIBM_CXXFLAGS],["-lm"])])
 AC_CHECK_LIB([lo],[lo_send_internal],[AC_SUBST([LIBLO_CXXFLAGS],["-llo"])])
+
+# BOOST
+AX_BOOST_BASE([1.38])
+
+AX_BOOST_PROGRAM_OPTIONS
+if test "x${ax_cv_boost_program_options}" = "xno" ; then
+	AC_MSG_ERROR([missing package: libboost-program-options-dev])
+fi
+
+AX_BOOST_FILESYSTEM
+if test "x${ax_cv_boost_filesystem}" = "xno" ; then
+	AC_MSG_ERROR([missing package: libboost-filesystem-dev])
+fi
+
+AX_BOOST_THREAD
+if test "x${ax_cv_boost_thread}" = "xno" ; then
+    AC_MSG_ERROR([missing package: libboost-thread-dev])
+fi
 
 # GTK
 PKG_CHECK_MODULES([GTK], [gtk+-2.0])
@@ -57,23 +75,6 @@ PKG_CHECK_MODULES([CLUTTERGTK], [clutter-gtk-0.10 >= 0.10])
 AC_SUBST([CLUTTERGTK_LIBS])
 AC_SUBST([CLUTTERGTK_CFLAGS])
 
-# BOOST
-AX_BOOST_BASE([1.38])
-
-AX_BOOST_PROGRAM_OPTIONS
-if test "x${ax_cv_boost_program_options}" = "xno" ; then
-	AC_MSG_ERROR([missing package: libboost-program-options-dev])
-fi
-
-AX_BOOST_FILESYSTEM
-if test "x${ax_cv_boost_filesystem}" = "xno" ; then
-	AC_MSG_ERROR([missing package: libboost-filesystem-dev])
-fi
-
-AX_BOOST_THREAD
-if test "x${ax_cv_boost_thread}" = "xno" ; then
-    AC_MSG_ERROR([missing package: libboost-thread-dev])
-fi
 
 AX_CHECK_GL
 AX_CHECK_GLU
