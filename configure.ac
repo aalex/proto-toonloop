@@ -58,7 +58,7 @@ AC_SUBST([CLUTTERGTK_LIBS])
 AC_SUBST([CLUTTERGTK_CFLAGS])
 
 # BOOST
-AX_BOOST_BASE([1.35])
+AX_BOOST_BASE([1.38])
 
 AX_BOOST_PROGRAM_OPTIONS
 if test "x${ax_cv_boost_program_options}" = "xno" ; then
@@ -93,7 +93,6 @@ AC_CHECK_PROG(MENCODER, mencoder, yes, no)
 if test "$MENCODER" = no ; then
     AC_MSG_ERROR([Cannot find mencoder.])
 fi
-
 
 AC_CONFIG_FILES([
     Makefile
