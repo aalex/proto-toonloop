@@ -1,0 +1,11 @@
+Simple OpenAL prototype
+-----------------------
+I used the example in the "The OpenAL Utility Toolkit" document.
+
+You can find it at http://connect.creativelabs.com/openal/Documentation/Forms/AllItems.aspx
+
+Installation
+------------
+
+sudo apt-get install libalut-dev
+
