@@ -1,6 +1,7 @@
 /**
  * Clutter-GTK prototype
  */
+#include <iostream>
 #include "config.h"
 #include <gtk/gtk.h>
 #include <clutter/clutter.h>
@@ -16,20 +17,19 @@
 
 void proto_setup();
 
-typedef struct SuperOH
-{
-  ClutterActor *hand[NHANDS];
-  ClutterGroup   *group;
-  GdkPixbuf      *bgpixb;
+typedef struct SuperOH {
+//  ClutterActor *hand[NHANDS];
+  ClutterActor *live_input_image_;
+//  ClutterActor *playback_image_;
+//  ClutterGroup   *group;
+//  GdkPixbuf      *bgpixb;
 } SuperOH; 
 
 static gboolean fullscreen = FALSE;
 
 /* input handler */
-void on_key_or_button(ClutterStage *stage, ClutterEvent *event, gpointer data)
-{
-    if (event->type == CLUTTER_KEY_PRESS)
-    {
+void on_key_released(ClutterStage *stage, ClutterEvent *event, gpointer data) {
+    if (event->type == CLUTTER_KEY_PRESS) {
         g_print ("*** key press event (key:%c) ***\n", clutter_event_get_key_symbol (event));
         if (clutter_event_get_key_symbol(event) == CLUTTER_q)
 	        gtk_main_quit();
@@ -39,6 +39,7 @@ void on_key_or_button(ClutterStage *stage, ClutterEvent *event, gpointer data)
 /* Timeline handler */
 void frame_cb(ClutterTimeline *timeline, gint msecs, gpointer data)
 {
+//    std::cout << "frame_cb" << std::endl; 
 //     SuperOH *oh = (SuperOH *)data;
 //     gint i;
 //     guint rotation = clutter_timeline_get_progress(timeline) * 360.0f;
@@ -59,10 +60,8 @@ void frame_cb(ClutterTimeline *timeline, gint msecs, gpointer data)
 //     }
 }
 
-static void on_fullscreen_clicked(GtkButton *button, GtkWindow *window)
-{
-    if (!fullscreen)
-    {
+static void on_fullscreen_clicked(GtkButton *button, GtkWindow *window) {
+    if (!fullscreen) {
         gtk_window_fullscreen(window);
         fullscreen = TRUE;
     } else {
@@ -71,13 +70,11 @@ static void on_fullscreen_clicked(GtkButton *button, GtkWindow *window)
     }
 }
 
-void on_window_destroyed()
-{
+void on_window_destroyed() {
     gtk_main_quit();
 }
 
-void proto_setup()
-{
+void proto_setup() {
     ClutterTimeline *timeline;
     ClutterActor *stage;
     ClutterColor stage_color = { 0x61, 0x64, 0x8c, 0xff };
@@ -90,74 +87,75 @@ void proto_setup()
     pixbuf = gdk_pixbuf_new_from_file("/usr/share/icons/Human/48x48/stock/generic/folder-new.png", NULL);
     if (!pixbuf)
         g_error("pixbuf load failed");
-
     
+    // The window contains a vbox which contains the clutter scene embed:
+    // Window:
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroyed), NULL);
-
+    // VBox:
     vbox = gtk_vbox_new(FALSE, 6);
     gtk_container_add(GTK_CONTAINER(window), vbox);
-
+    // Clutter widget:
     clutter = gtk_clutter_embed_new();
     gtk_widget_set_size_request(clutter, WINWIDTH, WINHEIGHT);
-
     gtk_container_add(GTK_CONTAINER(vbox), clutter);
-
     stage = gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(clutter));
     // label:
-    label = gtk_label_new("This is a label");
+    label = gtk_label_new(PACKAGE_STRING);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
     // fullscreen button:
     button = gtk_button_new_with_label("Fullscreen");
     gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_stock(GTK_STOCK_FULLSCREEN, GTK_ICON_SIZE_BUTTON));
     g_signal_connect(button, "clicked", G_CALLBACK(on_fullscreen_clicked), window);
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
-    // quit button:
-    button = gtk_button_new_from_stock(GTK_STOCK_QUIT);
-    g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-    gtk_box_pack_end(GTK_BOX (vbox), button, FALSE, FALSE, 0);
     
-    /* and its background color */
-
+    // Background color:
     clutter_stage_set_color(CLUTTER_STAGE(stage), &stage_color);
 
     oh = g_new(SuperOH, 1);
+    // The live input image:
+    // >>>>>>>>>>>>>>>>>>>>
+    oh->live_input_image_ = gtk_clutter_texture_new_from_pixbuf(pixbuf);
+    clutter_actor_set_size(oh->live_input_image_, 50, 50);
+    clutter_actor_set_position(oh->live_input_image_, 0, 0);
+    clutter_container_add_actor(CLUTTER_CONTAINER(stage), CLUTTER_ACTOR(oh->live_input_image_));
+    // <<<<<<<<<<<<<<<<<<<<
 
-    /* create a new group to hold multiple actors in a group */
-    oh->group = CLUTTER_GROUP(clutter_group_new ());
-    
-    for (i = 0; i < NHANDS; i++)
-    {
-        gint x, y, w, h;
-#  if 1
-        /* Create a texture from pixbuf, then clone in to same resources */
-        if (i == 0)
-            oh->hand[i] = gtk_clutter_texture_new_from_pixbuf(pixbuf);
-        else
-            oh->hand[i] = clutter_clone_new(oh->hand[0]);
-#  else
-        ClutterColor colour = { 255, 0, 0, 255 };
+//    /* create a new group to hold multiple actors in a group */
+//    oh->group = CLUTTER_GROUP(clutter_group_new ());
+//    
+//    for (i = 0; i < NHANDS; i++)
+//    {
+//        gint x, y, w, h;
+//#  if 1
+//        /* Create a texture from pixbuf, then clone in to same resources */
+//        if (i == 0)
+//            oh->hand[i] = gtk_clutter_texture_new_from_pixbuf(pixbuf);
+//        else
+//            oh->hand[i] = clutter_clone_new(oh->hand[0]);
+//#  else
+//        ClutterColor colour = { 255, 0, 0, 255 };
+//
+//        oh->hand[i] = clutter_rectangle_new_with_color(&colour);
+//        clutter_actor_set_size(oh->hand[i], 50, 50);
+//#  endif
+//        /* Place around a circle */
+//        w = clutter_actor_get_width(oh->hand[0]);
+//        h = clutter_actor_get_height(oh->hand[0]);
+//
+//        x = WINWIDTH/2 + RADIUS * cos(i * M_PI / (NHANDS/2)) - w/2;
+//        y = WINHEIGHT/2 + RADIUS * sin(i * M_PI / (NHANDS/2)) - h/2;
+//
+//        clutter_actor_set_position(oh->hand[i], x, y);
+//
+//        /* Add to our group group */
+//        clutter_group_add(oh->group, oh->hand[i]);
+//      }
+//
+//    /* Add the group to the stage */
+//    clutter_container_add_actor(CLUTTER_CONTAINER(stage), CLUTTER_ACTOR(oh->group));
 
-        oh->hand[i] = clutter_rectangle_new_with_color(&colour);
-        clutter_actor_set_size(oh->hand[i], 50, 50);
-#  endif
-        /* Place around a circle */
-        w = clutter_actor_get_width(oh->hand[0]);
-        h = clutter_actor_get_height(oh->hand[0]);
-
-        x = WINWIDTH/2 + RADIUS * cos(i * M_PI / (NHANDS/2)) - w/2;
-        y = WINHEIGHT/2 + RADIUS * sin(i * M_PI / (NHANDS/2)) - h/2;
-
-        clutter_actor_set_position(oh->hand[i], x, y);
-
-        /* Add to our group group */
-        clutter_group_add(oh->group, oh->hand[i]);
-      }
-
-    /* Add the group to the stage */
-    clutter_container_add_actor(CLUTTER_CONTAINER(stage), CLUTTER_ACTOR(oh->group));
-
-    g_signal_connect (stage, "key-release-event", G_CALLBACK(on_key_or_button), oh);
+    g_signal_connect(stage, "key-release-event", G_CALLBACK(on_key_released), oh);
 
     gtk_widget_show_all(window);
 
@@ -165,7 +163,8 @@ void proto_setup()
      * unrealized when the clutter foreign window is set. widget_show
      * will call show on the stage.
      */
-    clutter_actor_show_all(CLUTTER_ACTOR(oh->group));
+    //clutter_actor_show_all(CLUTTER_ACTOR(oh->group));
+    clutter_actor_show_all(CLUTTER_ACTOR(oh->live_input_image_));
 
     /* Create a timeline to manage animation */
     timeline = clutter_timeline_new(6000);
