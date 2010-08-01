@@ -33,4 +33,4 @@ tests/check_threads
 src/toonloop
 missing
 src/gtk-clutter-proto
-
+src/gui2
