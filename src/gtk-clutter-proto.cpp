@@ -77,7 +77,7 @@ void on_window_destroyed() {
 void proto_setup() {
     ClutterTimeline *timeline;
     ClutterActor *stage;
-    ClutterColor stage_color = { 0x61, 0x64, 0x8c, 0xff };
+    ClutterColor stage_color = { 0x00, 0x00, 0x00, 0xff };
     GtkWidget *window, *clutter;
     GtkWidget *label, *button, *vbox;
     GdkPixbuf *pixbuf;
