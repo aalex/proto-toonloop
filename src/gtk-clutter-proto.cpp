@@ -14,6 +14,8 @@
 #define WINHEIGHT 400
 #define RADIUS 150
 
+void proto_setup();
+
 typedef struct SuperOH
 {
   ClutterActor *hand[NHANDS], *bgtex;
@@ -103,6 +105,20 @@ static void on_fullscreen(GtkButton *button, GtkWindow *window)
 
 int main(int argc, char *argv[])
 {
+  GError *error;
+
+  error = NULL;
+  gtk_clutter_init_with_args (&argc, &argv, NULL, NULL, NULL, &error);
+  if (error)
+      g_error ("Unable to initialize: %s", error->message);
+
+  proto_setup();
+  gtk_main();
+  return 0;
+}
+
+void proto_setup()
+{
   ClutterTimeline *timeline;
   ClutterActor *stage;
   ClutterColor stage_color = { 0x61, 0x64, 0x8c, 0xff };
@@ -111,13 +127,6 @@ int main(int argc, char *argv[])
   GdkPixbuf *pixbuf;
   SuperOH *oh;
   gint i;
-  GError *error;
-
-  error = NULL;
-  gtk_clutter_init_with_args (&argc, &argv, NULL, NULL, NULL, &error);
-  if (error)
-      g_error ("Unable to initialize: %s", error->message);
-
   pixbuf = gdk_pixbuf_new_from_file("/usr/share/icons/Human/48x48/stock/generic/folder-new.png", NULL);
 
   if (!pixbuf)
@@ -219,8 +228,5 @@ int main(int argc, char *argv[])
 
   /* and start it */
   clutter_timeline_start(timeline);
-
-  gtk_main();
-  return 0;
 }
 
