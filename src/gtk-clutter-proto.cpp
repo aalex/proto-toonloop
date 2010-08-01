@@ -38,24 +38,24 @@ void on_key_or_button(ClutterStage *stage, ClutterEvent *event, gpointer data)
 /* Timeline handler */
 void frame_cb(ClutterTimeline *timeline, gint msecs, gpointer data)
 {
-    SuperOH *oh = (SuperOH *)data;
-    gint i;
-    guint rotation = clutter_timeline_get_progress(timeline) * 360.0f;
-  
-    /* Rotate everything clockwise about stage center*/
-    clutter_actor_set_rotation(CLUTTER_ACTOR(oh->group), CLUTTER_Z_AXIS, rotation, WINWIDTH / 2, WINHEIGHT / 2, 0);
-  
-    for (i = 0; i < NHANDS; i++)
-    {
-        /* rotate each hand around there centers */
-        clutter_actor_set_rotation(
-            oh->hand[i],
-            CLUTTER_Z_AXIS,
-            - 6.0 * rotation,
-            clutter_actor_get_width(oh->hand[i]) / 2,
-            clutter_actor_get_height(oh->hand[i]) / 2,
-            0);
-    }
+//     SuperOH *oh = (SuperOH *)data;
+//     gint i;
+//     guint rotation = clutter_timeline_get_progress(timeline) * 360.0f;
+//   
+//     /* Rotate everything clockwise about stage center*/
+//     clutter_actor_set_rotation(CLUTTER_ACTOR(oh->group), CLUTTER_Z_AXIS, rotation, WINWIDTH / 2, WINHEIGHT / 2, 0);
+//   
+//     for (i = 0; i < NHANDS; i++)
+//     {
+//         /* rotate each hand around there centers */
+//         clutter_actor_set_rotation(
+//             oh->hand[i],
+//             CLUTTER_Z_AXIS,
+//             - 6.0 * rotation,
+//             clutter_actor_get_width(oh->hand[i]) / 2,
+//             clutter_actor_get_height(oh->hand[i]) / 2,
+//             0);
+//     }
 }
 
 static void on_fullscreen_clicked(GtkButton *button, GtkWindow *window)
@@ -68,6 +68,11 @@ static void on_fullscreen_clicked(GtkButton *button, GtkWindow *window)
         gtk_window_unfullscreen(window);
         fullscreen = FALSE;
     }
+}
+
+void on_window_destroyed()
+{
+    gtk_main_quit();
 }
 
 void proto_setup()
@@ -86,7 +91,7 @@ void proto_setup()
       g_error("pixbuf load failed");
 
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroyed), NULL);
 
   vbox = gtk_vbox_new(FALSE, 6);
   gtk_container_add(GTK_CONTAINER(window), vbox);
