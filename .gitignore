@@ -26,11 +26,13 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 missing
 *~
-src/.deps/*
+*.deps/*
+*.Tpo
+*.lo
+*.la
 src/config.h
 src/config.h.in
 src/stamp-h1
-tests/.deps/*
 # --------- specific conmpiled files.
 src/toonloop
 tests/check_bool
