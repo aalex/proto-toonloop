@@ -5,6 +5,8 @@
 *.tar.gz
 *.html
 *.xml
+*.libs
+*.deps
 # autoconf generated
 *Makefile.in*
 *Makefile
