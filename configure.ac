@@ -157,6 +157,8 @@ AC_SUBST(CXXFLAGS, " -O2 -Wall -Werror -Wextra -Wfatal-errors")
 
 AC_CONFIG_FILES([
     Makefile
+    libs/Makefile
+    libs/tinyxml/Makefile
     src/Makefile
     src/doxyfile
     man/Makefile

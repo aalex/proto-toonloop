@@ -4,6 +4,7 @@
 *.o
 *.tar.gz
 *.html
+*.xml
 # autoconf generated
 *Makefile.in*
 *Makefile

@@ -1,3 +1,4 @@
+# AM_CPPFLAGS = -I$(top_srcdir)/libs/tinyxml
 TESTS = check_looper check_classes check_threads check_bool check_symlinks check_containers check_statesaving check_signals 
 # check_midi check_moviesaver 
 
@@ -46,8 +47,8 @@ check_containers_CXXFLAGS = $(BOOST_CPPFLAGS)
 check_containers_LDADD = $(BOOST_LIBS) 
 
 check_statesaving_SOURCES = check_statesaving.cpp 
-check_statesaving_CXXFLAGS = $(BOOST_CPPFLAGS) 
-check_statesaving_LDADD = $(BOOST_LIBS) 
+check_statesaving_CXXFLAGS = $(BOOST_CPPFLAGS) -I$(top_srcdir)/libs/tinyxml
+check_statesaving_LDADD = $(BOOST_LIBS) $(top_srcdir)/libs/tinyxml/libtinyxml.la
 
 check_signals_SOURCES = check_signals.cpp 
 check_signals_CXXFLAGS = $(BOOST_CPPFLAGS) 

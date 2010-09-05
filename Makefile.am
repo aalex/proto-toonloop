@@ -1,4 +1,4 @@
-SUBDIRS = src tests man pixmaps
+SUBDIRS = libs src tests man pixmaps
 ACLOCAL_AMFLAGS = -I m4
 
 desktopdir = $(datadir)/applications
