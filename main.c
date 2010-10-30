@@ -22,6 +22,27 @@ static gchar *frag_source = "uniform float radius ;"
         "    gl_FragColor = color / count;"
         "}" ;
 
+gboolean print_file_contents(gchar *dir_name, gchar *file_name)
+{
+    gchar *full_path = g_build_filename(dir_name, file_name, NULL);
+    gchar *contents = NULL;
+    gsize length;
+    GError *error = NULL;
+
+    if(! g_file_get_contents(full_path, &contents, &length, &error)) 
+    {
+        g_free(full_path);
+        g_error_free(error);
+        error = NULL;
+        return FALSE;
+    }
+    g_print("Finished reading %s\n", full_path);
+    g_print("Contents: %s\n", contents);
+    g_free(contents);
+    g_free(full_path);
+    return TRUE;
+}
+
 static ClutterActor *load_image(int width, int height)
 {
     ClutterActor *actor = NULL;
@@ -69,6 +90,8 @@ int main(int argc, char *argv[])
     int height = 480;
     clutter_actor_set_size(stage, width, height);
     
+    print_file_contents(PKGDATADIR, "dummy.frag");
+        
     ClutterActor *image = load_image(width, height);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), image);
     setup_shader(image);
