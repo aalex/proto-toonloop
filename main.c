@@ -73,18 +73,21 @@ static void setup_custom_shader(ClutterActor *actor)
 
 static gboolean on_key_pressed(ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
-    if (event) /* There is no event for the first triggering */
-    {
-        switch (clutter_event_get_key_symbol(event))
-        {
-            case CLUTTER_Escape:
-                clutter_main_quit();
-                break;
-            default:
-                break;
-        }
-    }
-    return FALSE;
+    ClutterBindingPool *pool = NULL;
+    pool = clutter_binding_pool_find (G_OBJECT_TYPE_NAME (actor));
+    return clutter_binding_pool_activate(pool, clutter_event_get_key_symbol(event), clutter_event_get_state(event), G_OBJECT(actor));
+}
+
+static void setup_shortcuts(ClutterStage *stage)
+{
+    ClutterBindingPool *binding_pool = NULL;
+    GObjectClass *stage_class = NULL;
+
+    stage_class = (GObjectClass*) CLUTTER_STAGE_GET_CLASS(stage);
+    binding_pool = clutter_binding_pool_get_for_class(stage_class);
+    clutter_binding_pool_install_action(binding_pool, "escape-to-quit", CLUTTER_Escape, 0 /* no modifiers */, G_CALLBACK(clutter_main_quit), NULL, NULL);
+    clutter_binding_pool_install_action(binding_pool, "control-q-to-quit", CLUTTER_KEY_q, CLUTTER_CONTROL_MASK, G_CALLBACK(clutter_main_quit), NULL, NULL);
+    g_signal_connect(stage, "key-press-event", G_CALLBACK(on_key_pressed), NULL);
 }
 
 int main(int argc, char *argv[])
@@ -99,15 +102,12 @@ int main(int argc, char *argv[])
     clutter_stage_set_title(CLUTTER_STAGE(stage), "Shader Prototype");
     clutter_stage_set_color(CLUTTER_STAGE(stage), &stage_color);
     
-    //print_file_contents(PKGDATADIR, "dummy.frag");
-        
     ClutterActor *image = load_custom_image(width, height);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), image);
     setup_custom_shader(image);
     clutter_actor_show_all(stage);
-    g_signal_connect(stage, "key-press-event", G_CALLBACK(on_key_pressed), NULL);
-    g_print("Press Escape to quit.\n");
-
+    setup_shortcuts(CLUTTER_STAGE(stage));
+    
     clutter_main();
     return 0;
 }
