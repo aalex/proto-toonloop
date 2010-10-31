@@ -29,6 +29,20 @@ static gboolean toon_load_fragment_source_file(ClutterShader *shader, gchar *dir
     return TRUE;
 }
 
+static gchar *toon_find_shader_file(const gchar *shader_name)
+{
+    gchar *dirs[] ={"", "./shaders/", PKGDATADIR, NULL};
+    int i;
+    for (i = 0; dirs[i]; i++)
+    {
+        gchar *path = g_strdup_printf("%s%s.glsl", dirs[i], shader_name);
+        if (g_file_test(path, G_FILE_TEST_EXISTS))
+            return path;
+        g_free(path);
+    }
+    return NULL;
+}
+
 static ClutterActor *load_custom_image(int width, int height)
 {
     ClutterActor *actor = NULL;
@@ -48,6 +62,7 @@ static void setup_custom_shader(ClutterActor *actor)
 {
     ClutterShader *shader = NULL;
     shader = clutter_shader_new();
+    // TODO: use toon_find_shader_file
     //clutter_shader_set_fragment_source(shader, frag_source, -1);
     toon_load_fragment_source_file(shader, PKGDATADIR, "frag.brcosa.glsl");
     //toon_load_fragment_source_file(shader, PKGDATADIR, "frag.test.glsl");
