@@ -50,6 +50,7 @@ static void setup_custom_shader(ClutterActor *actor)
     shader = clutter_shader_new();
     //clutter_shader_set_fragment_source(shader, frag_source, -1);
     toon_load_fragment_source_file(shader, PKGDATADIR, "frag.brcosa.glsl");
+    //toon_load_fragment_source_file(shader, PKGDATADIR, "frag.test.glsl");
     GError *error = NULL;
     clutter_shader_compile(shader, &error);
     if (error)
@@ -61,11 +62,11 @@ static void setup_custom_shader(ClutterActor *actor)
     {
         clutter_actor_set_shader(actor, shader);
         // set uniform variables:
-        clutter_actor_set_shader_param_float(actor, "saturation", 0.1);
+        clutter_actor_set_shader_param_float(actor, "saturation", 0.0);
         clutter_actor_set_shader_param_float(actor, "contrast", 1.0);
         clutter_actor_set_shader_param_float(actor, "brightness", 1.0);
         clutter_actor_set_shader_param_float(actor, "alpha", 1.0);
-        clutter_actor_set_shader_param_float(actor, "opacity", 0.5);
+        clutter_actor_set_shader_param_float(actor, "opacity", 0.0);
         clutter_actor_set_shader_param_int(actor, "image", 0);
     }
 }

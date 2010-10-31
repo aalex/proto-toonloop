@@ -3,7 +3,7 @@
  * fragment shader for adjusting brightness, contrast and saturation
  */
 // the texture
-uniform sampler2DRect image;
+uniform sampler2D image;
 // arguments
 //uniform vec3 avgluma;
 uniform float saturation;
@@ -18,7 +18,7 @@ const vec3 avgluma = vec3(1.0, 1.0, 1.0);
 void main (void)
 {
     float input_alpha = gl_Color.a;
-	vec3 texColor = vec3(texture2DRect(image, gl_TexCoord[0].st));
+	vec3 texColor = vec3(texture2D(image, gl_TexCoord[0].st));
 	vec3 intensity = vec3(dot(texColor, LumCoeff));
 	vec3 color = mix(intensity, texColor, saturation);
 	color = mix(avgluma, color, contrast);
