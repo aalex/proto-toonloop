@@ -76,9 +76,26 @@ static void setup_shader(ClutterActor *actor)
         GValue value = { 0, };
         g_value_init(&value, G_TYPE_FLOAT);
         g_value_set_float(&value, 5.0);
-        clutter_actor_set_shader_param(actor, "radius", &value);
+        //clutter_actor_set_shader_param(actor, "radius", &value);
+        clutter_actor_set_shader_param_float(actor, "radius", 5.0);
+        clutter_actor_set_shader_param_int(actor, "rectTexture", 0);
         g_value_unset(&value);
     }
+}
+static gboolean on_key_pressed(ClutterActor *actor, ClutterEvent *event, gpointer data)
+{
+    if (event) /* There is no event for the first triggering */
+    {
+        switch (clutter_event_get_key_symbol(event))
+        {
+            case CLUTTER_Escape:
+                clutter_main_quit();
+                break;
+            default:
+                break;
+        }
+    }
+    return FALSE;
 }
 
 int main(int argc, char *argv[])
@@ -86,16 +103,22 @@ int main(int argc, char *argv[])
     clutter_init(&argc, &argv);
     ClutterActor *stage = NULL;
     stage = clutter_stage_get_default();
+    ClutterColor stage_color = { 0x99, 0x99, 0x99, 0xff };
     int width = 640;
     int height = 480;
     clutter_actor_set_size(stage, width, height);
+    clutter_stage_set_title(CLUTTER_STAGE(stage), "Shader Prototype");
+    clutter_stage_set_color(CLUTTER_STAGE(stage), &stage_color);
     
-    print_file_contents(PKGDATADIR, "dummy.frag");
+    //print_file_contents(PKGDATADIR, "dummy.frag");
         
     ClutterActor *image = load_image(width, height);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), image);
     setup_shader(image);
     clutter_actor_show_all(stage);
+    g_signal_connect(stage, "key-press-event", G_CALLBACK(on_key_pressed), NULL);
+    g_print("Press Escape to quit.\n");
+
     clutter_main();
     return 0;
 }
