@@ -3,26 +3,11 @@
 #define PKGDATADIR "./data/"
 #define IMGFILE "example.jpg" // works with svg too
 
-static gchar *frag_source = "uniform float radius ;"
-        "uniform sampler2DRect rectTexture;"
-        ""
-        "void main()"
-        "{"
-        "    vec4 color = texture2DRect(rectTexture, gl_TexCoord[0].st);"
-        "    float u;"
-        "    float v;"
-        "    int count = 1;"
-        "    for (u=-radius;u<radius;u++)"
-        "      for (v=-radius;v<radius;v++)"
-        "        {"
-        "          color += texture2DRect(rectTexture, vec2(gl_TexCoord[0].s + u * 2, gl_TexCoord[0].t +v * 2));"
-        "          count ++;"
-        "        }"
-        ""
-        "    gl_FragColor = color / count;"
-        "}" ;
 
-gboolean print_file_contents(gchar *dir_name, gchar *file_name)
+/**
+ * Loads a fragment shader source from a file.
+ */
+static gboolean toon_load_fragment_source_file(ClutterShader *shader, gchar *dir_name, gchar *file_name)
 {
     gchar *full_path = g_build_filename(dir_name, file_name, NULL);
     gchar *contents = NULL;
@@ -36,14 +21,15 @@ gboolean print_file_contents(gchar *dir_name, gchar *file_name)
         error = NULL;
         return FALSE;
     }
-    g_print("Finished reading %s\n", full_path);
-    g_print("Contents: %s\n", contents);
+    //g_print("Finished reading %s\n", full_path);
+    clutter_shader_set_fragment_source(shader, contents, -1);
+    //g_print("Contents: %s\n", contents);
     g_free(contents);
     g_free(full_path);
     return TRUE;
 }
 
-static ClutterActor *load_image(int width, int height)
+static ClutterActor *load_custom_image(int width, int height)
 {
     ClutterActor *actor = NULL;
     actor = clutter_texture_new ();
@@ -58,11 +44,12 @@ static ClutterActor *load_image(int width, int height)
     return actor;
 }
 
-static void setup_shader(ClutterActor *actor)
+static void setup_custom_shader(ClutterActor *actor)
 {
     ClutterShader *shader = NULL;
     shader = clutter_shader_new();
-    clutter_shader_set_fragment_source(shader, frag_source, -1);
+    //clutter_shader_set_fragment_source(shader, frag_source, -1);
+    toon_load_fragment_source_file(shader, PKGDATADIR, "frag.brcosa.glsl");
     GError *error = NULL;
     clutter_shader_compile(shader, &error);
     if (error)
@@ -73,15 +60,16 @@ static void setup_shader(ClutterActor *actor)
     else
     {
         clutter_actor_set_shader(actor, shader);
-        GValue value = { 0, };
-        g_value_init(&value, G_TYPE_FLOAT);
-        g_value_set_float(&value, 5.0);
-        //clutter_actor_set_shader_param(actor, "radius", &value);
-        clutter_actor_set_shader_param_float(actor, "radius", 5.0);
-        clutter_actor_set_shader_param_int(actor, "rectTexture", 0);
-        g_value_unset(&value);
+        // set uniform variables:
+        clutter_actor_set_shader_param_float(actor, "saturation", 0.1);
+        clutter_actor_set_shader_param_float(actor, "contrast", 1.0);
+        clutter_actor_set_shader_param_float(actor, "brightness", 1.0);
+        clutter_actor_set_shader_param_float(actor, "alpha", 1.0);
+        clutter_actor_set_shader_param_float(actor, "opacity", 0.5);
+        clutter_actor_set_shader_param_int(actor, "image", 0);
     }
 }
+
 static gboolean on_key_pressed(ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
     if (event) /* There is no event for the first triggering */
@@ -112,9 +100,9 @@ int main(int argc, char *argv[])
     
     //print_file_contents(PKGDATADIR, "dummy.frag");
         
-    ClutterActor *image = load_image(width, height);
+    ClutterActor *image = load_custom_image(width, height);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), image);
-    setup_shader(image);
+    setup_custom_shader(image);
     clutter_actor_show_all(stage);
     g_signal_connect(stage, "key-press-event", G_CALLBACK(on_key_pressed), NULL);
     g_print("Press Escape to quit.\n");
