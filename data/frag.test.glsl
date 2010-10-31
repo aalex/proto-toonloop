@@ -1,5 +1,4 @@
 // test for alpha using fragment shaders.
-#extension GL_ARB_texture_rectangle : enable
 uniform float alpha;
 // the texture
 uniform sampler2D image;

@@ -1,4 +1,3 @@
-#extension GL_ARB_texture_rectangle : enable
 /** 
  * fragment shader for adjusting brightness, contrast and saturation
  */
