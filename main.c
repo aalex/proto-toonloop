@@ -3,39 +3,33 @@
 #define PKGDATADIR "./data/"
 #define IMGFILE "example.jpg" // works with svg too
 
-
 /**
  * Loads a fragment shader source from a file.
  */
-static gboolean toon_load_fragment_source_file(ClutterShader *shader, gchar *dir_name, gchar *file_name)
+static gboolean toon_load_fragment_source_file(ClutterShader *shader, gchar *file_name)
 {
-    gchar *full_path = g_build_filename(dir_name, file_name, NULL);
     gchar *contents = NULL;
     gsize length;
     GError *error = NULL;
 
-    if(! g_file_get_contents(full_path, &contents, &length, &error)) 
+    if(! g_file_get_contents(file_name, &contents, &length, &error)) 
     {
-        g_free(full_path);
         g_error_free(error);
         error = NULL;
         return FALSE;
     }
-    //g_print("Finished reading %s\n", full_path);
     clutter_shader_set_fragment_source(shader, contents, -1);
-    //g_print("Contents: %s\n", contents);
     g_free(contents);
-    g_free(full_path);
     return TRUE;
 }
 
-static gchar *toon_find_shader_file(const gchar *shader_name)
+static gchar *toon_find_file(const gchar *file_name)
 {
-    gchar *dirs[] ={"", "./shaders/", PKGDATADIR, NULL};
+    gchar *dirs[] ={"", "./data/", PKGDATADIR, NULL};
     int i;
     for (i = 0; dirs[i]; i++)
     {
-        gchar *path = g_strdup_printf("%s%s.glsl", dirs[i], shader_name);
+        gchar *path = g_strdup_printf("%s%s", dirs[i], file_name);
         if (g_file_test(path, G_FILE_TEST_EXISTS))
             return path;
         g_free(path);
@@ -49,12 +43,13 @@ static ClutterActor *load_custom_image(int width, int height)
     actor = clutter_texture_new ();
     gboolean success;
     GError *error = NULL;
-    gchar *file_name = PKGDATADIR IMGFILE;
+    gchar *file_name = toon_find_file(IMGFILE);
     success = clutter_texture_set_from_file(CLUTTER_TEXTURE(actor), file_name, &error);
     if (! success)
         g_print("Could not load image %s.\n", file_name);
     if (error)
         g_error("Error loading image %s: %s\n", file_name, error->message);
+    g_free(file_name);
     return actor;
 }
 
@@ -64,7 +59,9 @@ static void setup_custom_shader(ClutterActor *actor)
     shader = clutter_shader_new();
     // TODO: use toon_find_shader_file
     //clutter_shader_set_fragment_source(shader, frag_source, -1);
-    toon_load_fragment_source_file(shader, PKGDATADIR, "frag.brcosa.glsl");
+    gchar *file_name = toon_find_file("frag.brcosa.glsl");
+    toon_load_fragment_source_file(shader, file_name);
+    g_free(file_name);
     //toon_load_fragment_source_file(shader, PKGDATADIR, "frag.test.glsl");
     GError *error = NULL;
     clutter_shader_compile(shader, &error);
