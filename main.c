@@ -82,9 +82,9 @@ static void setup_custom_shader(ClutterActor *actor)
         clutter_actor_set_shader_param_int(actor, "image", 0);
     
         GValue value = { 0, };
-        g_value_init(&value, CLUTTER_TYPE_SHADER_MATRIX);
-        gfloat matrix[] = {1.0, 1.0, 1.0};
-        clutter_value_set_shader_matrix(&value, 3, &(matrix[0]));
+        g_value_init(&value, CLUTTER_TYPE_SHADER_FLOAT);
+        gfloat avgluma[] = {1.0, 1.0, 1.0};
+        clutter_value_set_shader_float(&value, 3, avgluma);
         clutter_actor_set_shader_param(actor, "avgluma", &value);
         g_value_unset(&value);
     }
