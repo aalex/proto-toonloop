@@ -1,0 +1,8 @@
+<toonloop_midi_bindings>
+    <binding note_on="60" action="grab_frame" />
+    <binding note_off="60" action="remove_frame" />
+    <binding note_on="62" action="select_clip" arg1="1" />
+    <binding note_on="63" action="select_clip" arg1="2" />
+    <binding control="50" action="fx_brcosa" mapping="map" from="0" to="100" />
+</toonloop_midi_bindings>
+
