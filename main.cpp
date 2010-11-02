@@ -76,7 +76,7 @@ int main()
         NULL,
         on_error
     };
-    GMarkupParseContext *context = g_markup_parse_context_new(&parser, 0, NULL, NULL);
+    GMarkupParseContext *context = g_markup_parse_context_new(&parser, G_MARKUP_TREAT_CDATA_AS_TEXT, NULL, NULL);
     /* seriously crummy error checking */
     char *text;
     gsize length;
