@@ -1,44 +1,59 @@
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 
+//class Command { };
+
+struct MidiBinding
+{
+    public:
+        gchar *action;
+};
 
 class MidiBinder
 {
-    private:
     public:
-        void do_some_stuff();
-        gchar *current_animal_noise;
+        MidiBinder();
+        bool load_xml_file(const gchar *file_name);
+        MidiBinding *current_binding;
 };
 
 /*
- * Called for open tags <foo bar="baz"> 
+ * Called for open tags <foo bar="baz">
  */
-static void start_element(
+static void on_midi_xml_start_element(
         GMarkupParseContext *context,
         const gchar *element_name,
         const gchar **attribute_names,
         const gchar **attribute_values,
         gpointer user_data,
-        GError **error) 
+        GError **error)
 {
     MidiBinder *self = static_cast<MidiBinder *>(user_data);
-    const gchar **name_cursor = attribute_names;
-    const gchar **value_cursor = attribute_values;
-    while (*name_cursor) 
+    // check each name and value for the current tag:
+    if (g_strcmp0(element_name, "binding") == 0)
     {
-        if (g_strcmp0(*name_cursor, "noise") == 0)
-            self->current_animal_noise = g_strdup(*value_cursor);
-        name_cursor++;
-        value_cursor++;
+        self->current_binding = new MidiBinding();
+        const gchar **name_cursor = attribute_names;
+        const gchar **value_cursor = attribute_values;
+        while (*name_cursor)
+        {
+            if (g_strcmp0(*name_cursor, "action") == 0)
+            {
+                self->current_binding->action = g_strdup(*value_cursor);
+                g_print("Found action %s=%s in %s\n", *name_cursor, *value_cursor, element_name);
+            }
+            name_cursor++;
+            value_cursor++;
+        }
     }
 }
 
 /**
  * Called when some text inside a tag is encountered.
  */
-static void text(
+static void on_midi_xml_text(
         GMarkupParseContext *context,
         const gchar         *text,
         gsize                text_len,
@@ -49,73 +64,82 @@ static void text(
     // Note that "text" is not a regular C string: it is
     // not null-terminated. This is the reason for the
     // unusual %*s format below.
-    if (self->current_animal_noise)
-        printf("I am a %*s and I go %s. Can you do it?\n", text_len, text, self->current_animal_noise);
+    if (self->current_binding)
+        printf("Some text contents: %*s.\n", text_len, text);
 }
 
 /**
- * Called for close tags </foo> 
+ * Called for close tags </foo>
  */
-static void end_element(
+static void on_midi_xml_end_element(
         GMarkupParseContext *context,
         const gchar *element_name,
         gpointer user_data,
         GError **error)
 {
     MidiBinder *self = static_cast<MidiBinder *>(user_data);
-    if (self->current_animal_noise)
+    if (self->current_binding)
     {
-        g_free(self->current_animal_noise);
-        self->current_animal_noise = NULL;
+        //g_free(self->current_animal_noise);
+        delete self->current_binding;
+        self->current_binding = NULL;
     }
 }
-
 
   /* Called on error, including one set by other
    * methods in the vtable. The GError should not be freed.
    */
-static void on_error(GMarkupParseContext *context, GError *error, gpointer user_data)
+static void on_midi_xml_error(GMarkupParseContext *context, GError *error, gpointer user_data)
 {
     //MidiBinder *self = static_cast<MidiBinder *>(user_data);
     g_print("Error parsing XML markup: %s\n", error->message);
 }
 
-/* Code to grab the file into memory and parse it. */
+MidiBinder::MidiBinder()
+{
+    //current_animal_noise = NULL;
+    current_binding = NULL;
+}
 
-void MidiBinder::do_some_stuff()
+/**
+ * Code to grab the file into memory and parse it. 
+ */
+bool MidiBinder::load_xml_file(const gchar *file_name)
 {
     /* The list of what handler does what. */
     GMarkupParser parser = {
-        start_element,
-        end_element,
-        text,
+        on_midi_xml_start_element,
+        on_midi_xml_end_element,
+        on_midi_xml_text,
         NULL,
-        on_error
+        on_midi_xml_error
     };
     gpointer user_data = (gpointer) this;
-    current_animal_noise = NULL;
     GMarkupParseContext *context = g_markup_parse_context_new(&parser, G_MARKUP_TREAT_CDATA_AS_TEXT, user_data, NULL);
     /* seriously crummy error checking */
     char *xml_text;
     gsize length;
-    if (g_file_get_contents("simple.xml", &xml_text, &length, NULL) == FALSE) 
+    if (g_file_get_contents(file_name, &xml_text, &length, NULL) == FALSE)
     {
         printf("Couldn't load XML\n");
-        exit(255);
+        return false;
     }
-    if (g_markup_parse_context_parse(context, xml_text, length, NULL) == FALSE) 
+    if (g_markup_parse_context_parse(context, xml_text, length, NULL) == FALSE)
     {
         printf("Parse failed\n");
-        exit(255);
+        return false;
     }
     g_free(xml_text);
     g_markup_parse_context_free(context);
+    return true;
 }
 
-int main() 
+int main()
 {
     MidiBinder binder = MidiBinder();
-    binder.do_some_stuff();
+    std::string file_name = "midibindings.xml";
+    if (binder.load_xml_file(file_name.c_str()))
+        g_print("success\n");
     return 0;
 }
 
