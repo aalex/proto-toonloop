@@ -13,6 +13,19 @@ struct MidiBinding
         // TODO: glist *args;
 };
 
+#if 0
+We could use string commands:
+
+gchar **g_strsplit(const gchar *string, const gchar *delimiter, gint max_tokens);
+
+gchar **words = NULL;
+words = g_strsplit("hello 1 2", " ", 10);
+g_strfreev(words); // to free it. 
+
+#endif
+
+
+
 class MidiBinder
 {
     public:

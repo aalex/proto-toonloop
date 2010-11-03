@@ -4,5 +4,7 @@
     <binding note_on="62" action="select_clip" arg1="1" />
     <binding note_on="63" action="select_clip" arg1="2" />
     <binding control="50" action="fx_brcosa" mapping="map" from="0" to="100" />
+    <note_on note="60" action="do_some" args="1 2 3" />
+    <note_on note="60" command="select_clip 1" />
 </toonloop_midi_bindings>
 
