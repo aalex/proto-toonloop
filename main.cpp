@@ -8,7 +8,9 @@
 struct MidiBinding
 {
     public:
+        // Name of the Controller's method to call
         gchar *action;
+        // TODO: glist *args;
 };
 
 class MidiBinder
