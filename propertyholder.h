@@ -21,32 +21,35 @@
  * along with Toonloop.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <map>
+#include <string>
+#include <boost/shared_ptr.hpp>
 #include "property.h"
+
 /**
  * Holds many properties identified by their name.
  */
 template <typename T> class PropertyHolder
 {
     public:
-        PropertyHolder() {};
+        typedef boost::shared_ptr< Property<T> > PropertyPtr;
+
         void add_property(const std::string &name, T value)
         {
-            Property<T> *p = new Property<T>(name, value);
-            properties_[name] = p;
+            properties_[name] = PropertyPtr(new Property<T>(name, value));
         }
         
         void remove_property(const std::string &name)
         {
-            Property<T> *p = properties_[name];
             properties_.erase(name);
-            delete p;
         }
 
         Property<T> *get_property(const std::string &name) const
         {
-            return properties_.find(name)->second;
+            return properties_.find(name)->second.get();
         }
-        std::map<std::string, Property<T>* > properties_;
+
     private:
+        std::map<std::string, PropertyPtr> properties_;
 };
 #endif

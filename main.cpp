@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
     x->value_changed_signal_.connect(&cb);
     //x->register_on_changed_slot(&cb);
     x->set_value(6);
+    holder.remove_property("bar");
 
     return 0;
 }

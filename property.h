@@ -48,6 +48,7 @@ template <typename T> class Property
             name_(""),
             value_(0)
         {}
+        
         Property(const std::string &name, T value) : 
             name_(name),
             value_(value) {}
