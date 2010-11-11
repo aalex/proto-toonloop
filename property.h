@@ -1,3 +1,5 @@
+#ifndef __PROPERTY_H__
+#define __PROPERTY_H__
 /*
  * Toonloop
  *
@@ -26,6 +28,9 @@
  * Property that can be changed by user interfaces mostly for effects.
  *
  * Can hold a value of a type such as int, float, etc.
+ *
+ * When its value changes, its signal is triggered with its name
+ * and its new value as arguments.
  */
 template <typename T> class Property
 {
@@ -59,10 +64,11 @@ template <typename T> class Property
                 value_changed_signal_(name_, value_);
             }
         }
+        // TODO: make private, and ask to user to use the register_on_changed_slot method.
         OnChanged value_changed_signal_;
     private:
-        //boost::signals2::signal<void (std::string, T)> value_changed_signal_;
         std::string name_;
         T value_;
 };
 
+#endif

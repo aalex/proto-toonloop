@@ -1,4 +1,5 @@
 #include "property.h"
+#include "propertyholder.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -8,30 +9,6 @@ void cb(std::string &name, int value)
     std::cout << name << " changed to " << value << std::endl;
 }
 
-template <typename T> class PropertyHolder
-{
-    public:
-        PropertyHolder() {};
-        void add_property(const std::string &name, T value)
-        {
-            Property<T> *p = new Property<T>(name, value);
-            properties_[name] = p;
-        }
-        
-        void remove_property(const std::string &name)
-        {
-            Property<T> *p = properties_[name];
-            properties_.erase(name);
-            delete p;
-        }
-
-        Property<T> *get_property(const std::string &name) const
-        {
-            return properties_.find(name)->second;
-        }
-        std::map<std::string, Property<T>* > properties_;
-    private:
-};
 
 int main(int argc, char *argv[])
 {

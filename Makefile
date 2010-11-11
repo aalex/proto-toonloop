@@ -1,6 +1,6 @@
 all: run
 
-run: main.cpp property.h
+run: main.cpp property.h propertyholder.h
 	g++ -Wall -Werror -o run main.cpp
 
 clean:
