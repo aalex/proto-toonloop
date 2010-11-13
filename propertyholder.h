@@ -46,6 +46,8 @@ template <typename T> class PropertyHolder
 
         Property<T> *get_property(const std::string &name) const
         {
+            if (properties_.find(name) == properties_.end())
+                return 0;
             return properties_.find(name)->second.get();
         }
 
