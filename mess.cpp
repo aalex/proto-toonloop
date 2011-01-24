@@ -7,22 +7,12 @@
 class BaseArgument
 {
     public:
-        virtual bool isString() const
-        {
-            return false;
-        }
-        virtual bool isBoolean() const
-        {
-            return false;
-        }
-        virtual bool isDouble() const
-        {
-            return false;
-        }
         virtual bool is(const std::type_info &typeInfo) const
         {
             return false;
         }
+        virtual ~BaseArgument()
+        {}
 };
 
 template <typename T>
@@ -33,11 +23,11 @@ class Argument : public BaseArgument
         {
             value_ = value;
         }
-        virtual T getValue() const
+        T getValue() const
         {
             return value_;
         }
-        virtual bool is(const std::type_info &typeInfo) const
+        bool is(const std::type_info &typeInfo) const
         {
             return typeid(value_) == typeInfo;
         }
@@ -68,9 +58,9 @@ int main()
     vector<shared_ptr<BaseArgument> > vec;
     for (int i = 0; i < 1000; i++)
     {
-        vec.push_back(shared_ptr<BaseArgument>(createArgument<bool>(true)));
-        vec.push_back(shared_ptr<BaseArgument>(createArgument<string>("hello")));
-        vec.push_back(shared_ptr<BaseArgument>(createArgument<double>(3.14159)));
+        vec.push_back(createArgument<bool>(true));
+        vec.push_back(createArgument<string>("hello"));
+        vec.push_back(createArgument<double>(3.14159));
     }
     
     for (ArgIterator iter = vec.begin() ; iter != vec.end(); ++iter)
